@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kiki’s Cup • Leaderboard</title>
+<style>
+  /* ============================
+     Modern Dark + Green Theme
+     ============================ */
+  :root{
+    --bg:#0E1412; --panel:#0F1916; --surface:#121C19; --ink:#EAF2EC;
+    --muted:#A7B6AB; --border:#24322D;
+    --accent:#2DCB71; --accent-ink:#07130D; --focus:#2DCB7133;
+    --good:#39D98A; --even:#A7B6AB; --bad:#FF6B6B; --crown:#E9C700;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; padding:0; }
+  body{
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -240px, #14342755 0%, transparent 60%),
+      linear-gradient(180deg, #0D1311, #0E1412 60%, #0A0F0E);
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .frame{
+    width:100%; max-width:720px; min-height:100dvh;
+    display:flex; flex-direction:column;
+    background: radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat;
+  }
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(15,25,22,.75);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:.9rem 1rem; gap:.75rem; }
+  .header-left{ display:flex; align-items:center; gap:.75rem; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 2px #15231E; }
+  .title{ font-weight:800; letter-spacing:.3px; }
+  .sub{ color:var(--muted); font-size:.9rem; }
+  #logo{ width:30%; height:auto; flex-shrink:0; filter: drop-shadow(0 4px 16px rgba(0,0,0,.35)); }
+  @media (max-width:560px){ #logo{ width:64px; } }
+
+  .navbar{
+    position:relative; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(20,33,29,.6), rgba(12,22,19,.85));
+    backdrop-filter: blur(6px);
+    padding:.5rem 1rem;
+  }
+  .hambox{ display:flex; align-items:center; gap:.6rem; }
+  .hambtn{
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    width:40px; height:40px; border-radius:12px; border:1px solid var(--border); background:#0F1916;
+  }
+  .hambtn:focus-visible{ outline:4px solid var(--focus); outline-offset:2px; }
+  .hamicon, .hamicon::before, .hamicon::after{
+    content:""; display:block; width:18px; height:2px; background:var(--ink); border-radius:2px; position:relative;
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  .hamicon::before{ position:absolute; transform:translateY(-6px); }
+  .hamicon::after{ position:absolute; transform:translateY(6px); }
+  .hambtn[aria-expanded="true"] .hamicon{ background:transparent; }
+  .hambtn[aria-expanded="true"] .hamicon::before{ transform:rotate(45deg); }
+  .hambtn[aria-expanded="true"] .hamicon::after{ transform:rotate(-45deg); }
+
+  .navpanel{
+    position:relative; margin-top:.6rem; border:1px solid var(--border);
+    background:linear-gradient(180deg, var(--surface), #101A16); border-radius:14px; padding:.6rem;
+    box-shadow:0 8px 28px rgba(0,0,0,.35); display:none;
+  }
+  .navpanel.open{ display:block; }
+  .navgrid{ display:grid; grid-template-columns:1fr; gap:.5rem; }
+  .navlink{
+    appearance:none; width:100%; display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    padding:.8rem 1rem; border-radius:12px; border:1px solid var(--border); background:#13201B; cursor:pointer; font-weight:800; color:var(--ink);
+    transition: transform .06s ease, border-color .2s ease, background .2s ease;
+  }
+  .navlink:hover{ background:#17251F; border-color:#2A3A34; transform: translateY(-1px); }
+  .chev{ font-weight:900; color:var(--muted); }
+  @media (min-width:560px){ .navgrid{ grid-template-columns:repeat(3,1fr); } }
+
+  .progress{ height:6px; background:#0E1815; }
+  .progress > span{ display:block; height:100%; width:100%; background:linear-gradient(90deg, var(--accent), #6BE39B); box-shadow:0 0 12px #29ba69aa inset; }
+
+  main{ flex:1; padding:1rem; display:flex; flex-direction:column; gap:1rem; }
+  .card{
+    background:linear-gradient(180deg, var(--surface), #101A16);
+    border:1px solid var(--border); border-radius:16px; padding:1rem;
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 8px 28px rgba(0,0,0,.35);
+  }
+  .controls{ display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; justify-content:space-between; }
+  .pillinfo{ color:var(--muted); font-size:.9rem; }
+
+  .leader-badge{
+    display:inline-flex; align-items:center; gap:.4rem; font-weight:900;
+    background:#13201B; border:1px solid var(--border); border-radius:999px; padding:.35rem .6rem;
+  }
+  .crown::before{
+    content:"👑"; display:block; font-size:16px; line-height:1; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35));
+  }
+
+  /* Desktop table */
+  .table-wrap{ border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#0F1916; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-weight:700; font-size:.9rem; color:#CFE3D8;
+    background:#0F1916; border-bottom:1px solid var(--border);
+    padding:.8rem .9rem; user-select:none;
+  }
+  tbody td{ padding:.75rem .9rem; border-bottom:1px solid var(--border); vertical-align:middle; color:var(--ink); }
+  tbody tr:last-child td{ border-bottom:none; }
+  .rank{ width:3ch; text-align:right; font-variant-numeric: tabular-nums; opacity:.9; }
+  .name{ font-weight:700; letter-spacing:.2px; }
+  .thru{ font-variant-numeric: tabular-nums; color:#CFE3D8; font-weight:600; }
+  .to-par{ font-variant-numeric: tabular-nums; font-weight:800; }
+  .to-par.under{ color:var(--good); } .to-par.even{ color:var(--even); } .to-par.over{ color:var(--bad); }
+  tr.me td{ background:linear-gradient(180deg, #11261C, #0F1E18); }
+
+  /* MOBILE list cards */
+  .list{ display:none; }
+  .row{
+    display:flex; gap:.8rem; align-items:center;
+    padding:.8rem .9rem; border:1px solid var(--border); border-radius:14px; background:#0F1916;
+  }
+  .row + .row{ margin-top:.6rem; }
+  .avatar{
+    width:42px; height:42px; border-radius:50%;
+    background:#183B2C; border:1px solid #1E4A38;
+    display:grid; place-items:center; font-weight:800; color:#EAF2EC;
+  }
+  .meta{ flex:1; min-width:0; }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+  .nm{ font-weight:800; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill{ border:1px solid var(--border); background:#13201B; border-radius:10px; padding:.2rem .5rem; font-weight:800; }
+  .pill.under{ color:var(--good); } .pill.even{ color:var(--even);} .pill.over{ color:var(--bad); }
+  .bot{ display:flex; align-items:center; gap:.6rem; margin-top:.35rem; color:var(--muted); font-size:.9rem; }
+  .prog{ position:relative; height:6px; background:#0E1815; border-radius:999px; overflow:hidden; flex:1; border:1px solid var(--border); }
+  .prog > span{ position:absolute; inset:0 auto 0 0; width:0%; background:linear-gradient(90deg, var(--accent), #6BE39B); }
+  .tag{ font-size:.78rem; border:1px solid var(--border); border-radius:999px; padding:.05rem .45rem; background:#13201B; color:#CFE3D8; }
+
+  .footer-hint{ color:var(--muted); font-size:.82rem; text-align:center; margin-bottom:.5rem; }
+  .btn{ appearance:none; border:1px solid var(--border); border-radius:12px; padding:.7rem 1rem; font-weight:700; cursor:pointer; background:#13201B; color:#EAF2EC; }
+  .btn:hover{ background:#17251F; border-color:#2A3A34; }
+  .btn:focus-visible{ outline:4px solid var(--focus); outline-offset:2px; }
+
+  @media (max-width:560px){
+    .table-wrap{ display:none; }
+    .list{ display:block; }
+    #logo{ width:64px; }
+  }
+</style>
+</head>
+<body>
+  <div class="frame" role="application">
+    <header>
+      <div class="topbar" aria-label="Leaderboard header">
+        <div class="header-left">
+          <span class="dot" aria-hidden="true"></span>
+          <div class="header-text">
+            <div class="title">Kiki’s Cup</div>
+            <div class="sub">Live Leaderboard</div>
+          </div>
+        </div>
+        <img id="logo" src="Kikiscup-logo.png" alt="Kiki's Cup Logo">
+      </div>
+      <div class="navbar">
+        <div class="hambox">
+          <button class="hambtn" id="hambtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu">
+            <span class="hamicon" aria-hidden="true"></span>
+          </button>
+          <span class="navhint">Quick actions</span>
+        </div>
+        <div class="navpanel" id="navpanel" role="menu" aria-label="Primary actions">
+          <div class="navgrid">
+            <button class="navlink" role="menuitem" data-nav="continue"><span>Continue Round</span><span class="chev">›</span></button>
+            <button class="navlink" role="menuitem" data-nav="leaderboard"><span>Leaderboard</span><span class="chev">›</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><span style="width:100%"></span></div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="controls">
+          <div class="pillinfo">
+            <span class="leader-badge">
+              <span class="crown"></span>
+              <span id="leaderName">—</span> • <span id="leaderScore">—</span>
+            </span>
+          </div>
+          <div class="actions"><button class="btn" id="refresh">Refresh</button></div>
+        </div>
+      </section>
+
+      <!-- Desktop table -->
+      <section class="table-wrap" aria-labelledby="lb-title">
+        <table id="leaderboard" role="table" aria-describedby="lb-caption">
+          <caption id="lb-caption" class="visually-hidden">Leaderboard for current event</caption>
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Thru</th><th>To Par</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Mobile list -->
+      <section class="list" id="mobileList" aria-label="Leaderboard mobile list"></section>
+
+      <p class="footer-hint" id="status">Auto-updates when anyone saves a hole.</p>
+    </main>
+  </div>
+
+<!-- Firebase + UI -->
+<script type="module">
+  import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  import {
+    initializeFirestore, setLogLevel,
+    collection, onSnapshot, query, orderBy, where
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjYMoPB3qgCiWAgieQxA_finCGKLiqyRU",
+    authDomain: "kikis-cup.firebaseapp.com",
+    projectId: "kikis-cup",
+    storageBucket: "kikis-cup.firebasestorage.app",
+    messagingSenderId: "144771718981",
+    appId: "1:144771718981:web:dd02a31a0be75541a3a82c",
+    measurementId: "G-VW4TVHNE5V"
+  };
+
+  let app; try { app = getApp(); } catch { app = initializeApp(firebaseConfig); }
+  const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true, useFetchStreams: true });
+  setLogLevel('error');
+  const auth = getAuth(app);
+
+  const ROUTES = { continueRound:'start-round.html', startRound:'start-round.html', leaderboard:'leaderboard.html' };
+
+  /* ===== Nav menu ===== */
+  const hambtn = document.getElementById('hambtn');
+  const panel  = document.getElementById('navpanel');
+  hambtn.addEventListener('click', ()=>{
+    const open = hambtn.getAttribute('aria-expanded')==='true';
+    hambtn.setAttribute('aria-expanded', String(!open));
+    panel.classList.toggle('open', !open);
+  });
+  panel.addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-nav]'); if(!btn) return;
+    const which = btn.dataset.nav;
+    if(which==='leaderboard') location.href = ROUTES.leaderboard;
+    if(which==='start') location.href = ROUTES.startRound;
+    if(which==='continue') location.href = ROUTES.continueRound; // resumes current round
+  });
+
+  /* ===== Helpers ===== */
+  const statusEl = document.getElementById('status');
+  function formatToPar(n){ return n===0 ? 'E' : (n>0?`+${n}`:`${n}`); }
+  function toparClass(n){ return n===0?'even':(n<0?'under':'over'); }
+  function initials(name){
+    const parts = (name||'').trim().split(/\s+/);
+    return ((parts[0]?.[0]||'')+(parts[parts.length-1]?.[0]||'')).toUpperCase() || 'P';
+  }
+  const params = new URLSearchParams(location.search);
+  const courseFilter = params.get('course'); // e.g. ?course=pinecrest-gc
+
+  /* ===== Renderers ===== */
+  function render(rows, meUid){
+    // Leader chip
+    const leader = rows[0];
+    const leaderNameEl = document.getElementById('leaderName');
+    const leaderScoreEl = document.getElementById('leaderScore');
+    if(leader){
+      leaderNameEl.textContent = leader.name || '—';
+      leaderScoreEl.textContent = `${formatToPar(leader.toPar)} • Thru ${leader.thru}`;
+    }else{
+      leaderNameEl.textContent = '—';
+      leaderScoreEl.textContent = '—';
+    }
+
+    // Desktop table
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = '';
+    rows.forEach((r, idx)=>{
+      const tr = document.createElement('tr');
+      if(r.uid === meUid) tr.classList.add('me');
+      tr.innerHTML = `
+        <td class="rank">${idx+1}</td>
+        <td class="name">${r.name||'Player'}</td>
+        <td class="thru">${r.thru||0}</td>
+        <td class="to-par ${toparClass(r.toPar)}">${formatToPar(r.toPar)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Mobile list
+    const list = document.getElementById('mobileList');
+    list.innerHTML = '';
+    rows.forEach((r, idx)=>{
+      const pct = Math.round(((r.thru||0)/18)*100);
+      const div = document.createElement('div');
+      div.className = 'row ' + (idx===0 ? 'leader-chip' : '') + (r.uid===meUid ? ' me' : '');
+      div.innerHTML = `
+        <div class="avatar">${initials(r.name)}</div>
+        <div class="meta">
+          <div class="top">
+            <div class="nm">${idx+1}. ${r.name||'Player'}</div>
+            <div class="pill ${toparClass(r.toPar)}">${formatToPar(r.toPar)}</div>
+          </div>
+          <div class="bot">
+            <span>Thru ${r.thru||0}</span>
+            <div class="prog" aria-label="Progress ${pct}%"><span style="width:${pct}%"></span></div>
+            <span class="tag">${pct}%</span>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  /* ===== Live subscription =====
+     We read /leaderboard where your Start Round page writes:
+     { name, courseId, thru, totalStrokes, toPar, updatedAt }
+     Simpler query (only orderBy updatedAt) avoids missing-index issues.
+  */
+  let meUid = null;
+  onAuthStateChanged(auth, (user)=>{ meUid = user?.uid || null; });
+
+  let q = query(collection(db, 'leaderboard'), orderBy('updatedAt', 'desc'));
+  if (courseFilter) {
+    // optional: filter by course if ?course= is present
+    q = query(collection(db, 'leaderboard'), where('courseId','==', courseFilter), orderBy('updatedAt', 'desc'));
+  }
+
+  onSnapshot(q, (snap)=>{
+    const rows = [];
+    snap.forEach(docSnap=>{
+      const d = docSnap.data() || {};
+      rows.push({
+        uid: docSnap.id,
+        name: d.name || 'Player',
+        thru: Number(d.thru||0),
+        toPar: Number(d.toPar||0),
+        updatedAt: d.updatedAt?.toMillis?.() || 0
+      });
+    });
+
+    // Sort client-side toPar asc, then thru desc, while we avoid composite index
+    rows.sort((a,b)=>{
+      if (a.toPar !== b.toPar) return a.toPar - b.toPar;        // better score first
+      if (a.thru !== b.thru) return b.thru - a.thru;            // more holes first
+      return b.updatedAt - a.updatedAt;                         // freshest last tie-breaker
+    });
+
+    render(rows, meUid);
+    statusEl.textContent = rows.length ? 'Auto-updates when anyone saves a hole.' : 'No scores yet. Start a round to appear here.';
+  }, (err)=>{
+    console.error('Leaderboard subscription failed:', err);
+    statusEl.textContent = 'Error loading leaderboard: ' + (err.message || err);
+  });
+
+  document.getElementById('refresh').addEventListener('click', ()=>{/* live; no manual refresh needed */});
+</script>
+</body>
+</html>

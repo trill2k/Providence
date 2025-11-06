@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kiki’s Cup • Login</title>
+<style>
+  :root{
+    /* Dark theme palette (matches app) */
+    --bg:#0E1412;
+    --panel:#0F1916;
+    --surface:#121C19;
+    --ink:#EAF2EC;
+    --muted:#A7B6AB;
+    --border:#24322D;
+
+    --accent:#2DCB71;
+    --accent-ink:#07130D;
+    --focus:#2DCB7133;
+
+    --danger:#EC5B5B;
+  }
+
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; margin:0; padding:0; }
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -240px, #14342755 0%, transparent 60%),
+      linear-gradient(180deg, #0D1311, #0E1412 60%, #0A0F0E);
+    display:grid; place-items:center; min-height:100dvh;
+  }
+
+  .card{
+    width:min(420px,92vw);
+    background: linear-gradient(180deg, var(--surface), #101A16);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:1.5rem;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.02) inset,
+      0 8px 28px rgba(0,0,0,.35);
+  }
+
+  h2{ margin:0 0 .75rem; font-weight:800; letter-spacing:.3px; }
+  .hint{ color:var(--muted); font-size:.95rem; margin-bottom:.9rem; }
+
+  label{ display:block; font-weight:600; margin-top:.5rem; }
+  input{
+    width:100%;
+    padding:.9rem .95rem;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#0F1916;
+    color:var(--ink);
+    margin:.4rem 0 .2rem;
+    outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  input::placeholder{ color:#9FB0A6; }
+  input:focus{
+    border-color:#2E8B5C;
+    box-shadow:0 0 0 4px var(--focus);
+    background:#101B17;
+  }
+
+  button{
+    width:100%;
+    padding:1rem 1.1rem;
+    border:none;
+    border-radius:14px;
+    font-weight:800;
+    cursor:pointer;
+    transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  button:active{ transform: translateY(1px); }
+
+  .primary{
+    background: linear-gradient(180deg, var(--accent), #28B864);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 24px rgba(41,186,105,.25), 0 0 0 1px #1E7A4E inset;
+    margin-top:.4rem;
+  }
+  .primary:hover{
+    background: linear-gradient(180deg, #33D279, #2BC46C);
+    box-shadow: 0 16px 32px rgba(41,186,105,.33), 0 0 0 1px #1E7A4E inset;
+  }
+
+  .secondary{
+    background:#0F1916;
+    color:var(--ink);
+    border:1px solid var(--border);
+    margin-top:.7rem;
+  }
+  .secondary:hover{ background:#13201B; border-color:#2A3A34; }
+
+  .sep{
+    height:1px;
+    background:var(--border);
+    margin:1.1rem 0;
+    border-radius:1px;
+  }
+
+  .err{
+    margin-top:.8rem;
+    color:var(--danger);
+    font-size:.9rem;
+    min-height:1.2em;
+  }
+</style>
+</head>
+<body>
+  <div class="card" role="form" aria-labelledby="title">
+    <h2 id="title">Kiki’s Cup</h2>
+    <div class="hint">Log in with email & password — or create an account with your name for the leaderboard.</div>
+
+    <!-- Login -->
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+    <button id="login" class="primary">Log in</button>
+
+    <div class="sep" aria-hidden="true"></div>
+
+    <!-- Signup -->
+    <label for="name">Name (as you want shown on leaderboard)</label>
+    <input id="name" type="text" placeholder="e.g. Niall Kingdale" autocomplete="name" />
+
+    <label for="email2">Email</label>
+    <input id="email2" type="email" placeholder="you@example.com" autocomplete="email" />
+
+    <label for="password2">Password</label>
+    <input id="password2" type="password" placeholder="Create a password" autocomplete="new-password" />
+
+    <button id="signup" class="secondary">Create account</button>
+
+    <div id="error" class="err" role="status" aria-live="polite"></div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { 
+    getAuth, onAuthStateChanged,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+  // --- Your Firebase Config ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjYMoPB3qgCiWAgieQxA_finCGKLiqyRU",
+    authDomain: "kikis-cup.firebaseapp.com",
+    projectId: "kikis-cup",
+    storageBucket: "kikis-cup.firebasestorage.app",
+    messagingSenderId: "144771718981",
+    appId: "1:144771718981:web:dd02a31a0be75541a3a82c",
+    measurementId: "G-VW4TVHNE5V"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // Already signed in? Go to the app.
+  onAuthStateChanged(auth, (user)=>{ if(user) location.href = "start-round.html"; });
+
+  const $ = (id)=>document.getElementById(id);
+  const showErr = (msg)=> { $("error").textContent = msg || ""; };
+
+  // ------ LOGIN ------
+  $("login").onclick = async ()=>{
+    showErr("");
+    const email = $("email").value.trim();
+    const pass  = $("password").value;
+    if(!email || !pass){ showErr("Enter email and password."); return; }
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      location.href = "start-round.html";
+    }catch(e){ showErr(e.message); }
+  };
+
+  // ------ SIGNUP ------
+  $("signup").onclick = async ()=>{
+    showErr("");
+
+    const nameRaw = $("name").value.trim();
+    const email   = $("email2").value.trim();
+    const pass    = $("password2").value;
+
+    if(!nameRaw){ showErr("Please enter your name."); return; }
+    if(!email || !pass){ showErr("Enter email and password."); return; }
+
+    try{
+      // Create auth user
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const uid  = cred.user.uid;
+
+      // Save display name to Auth profile
+      await updateProfile(cred.user, { displayName: nameRaw });
+
+      // Store in Firestore
+      await setDoc(doc(db, "users", uid), {
+        name: nameRaw,
+        name_lc: nameRaw.toLowerCase(),
+        email,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        rounds: 0
+      }, { merge: true });
+
+      // Optional: index collection for leaderboard
+      await setDoc(doc(db, "names", nameRaw.toLowerCase()), {
+        uid, createdAt: serverTimestamp()
+      });
+
+      // Redirect to the round
+      location.href = "start-round.html";
+    }catch(e){
+      showErr(e.message);
+    }
+  };
+</script>
+</body>
+</html>

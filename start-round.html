@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kiki’s Cup • Start Round</title>
+<style>
+  /* ============================
+     Modern Dark + Green Theme
+     ============================ */
+  :root{
+    /* Core palette */
+    --bg:#0E1412;           /* page background */
+    --panel:#0F1916;        /* sticky bars / header */
+    --surface:#121C19;      /* cards */
+    --hole:#17231F;         /* hole cells */
+    --ink:#EAF2EC;          /* main text on dark */
+    --muted:#A7B6AB;        /* secondary text */
+    --border:#24322D;       /* subtle borders */
+
+    /* Accents & states */
+    --accent:#2DCB71;       /* primary green */
+    --accent-ink:#07130D;   /* text on green */
+    --focus:#2DCB7133;      /* focus ring tint */
+    --danger:#EC5B5B;
+    --good:#39D98A; --even:#A7B6AB; --bad:#FF6B6B;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0; padding:0;}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -240px, #14342755 0%, transparent 60%),
+      linear-gradient(180deg, #0D1311, #0E1412 60%, #0A0F0E);
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  .frame{
+    width:100%; max-width:720px; min-height:100dvh; display:flex; flex-direction:column;
+    background: radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat;
+  }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(15,25,22,.75);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:.9rem 1rem; gap:.75rem; }
+  .header-left{ display:flex; align-items:center; gap:.75rem; }
+  .header-text{ display:flex; flex-direction:column; gap:.15rem; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 2px #15231E; }
+  .title{ font-weight:800; letter-spacing:.3px; }
+  .sub{ color:var(--muted); font-size:.9rem; display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
+  .who{ color:var(--ink); font-weight:700; }
+  #logo{ width:30%; height:auto; flex-shrink:0; filter: drop-shadow(0 4px 16px rgba(0,0,0,.35)); }
+  @media (max-width:480px){ #logo{ width:64px; } }
+
+  /* Navbar / Quick actions */
+  .navbar{
+    position:relative;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(20,33,29,.6), rgba(12,22,19,.85));
+    backdrop-filter: blur(6px);
+    padding:.5rem 1rem;
+  }
+  .hambox{ display:flex; align-items:center; gap:.6rem; }
+  .hambtn{
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    width:40px; height:40px; border-radius:12px; border:1px solid var(--border);
+    background: #0F1916;
+  }
+  .hambtn:focus-visible{ outline:4px solid var(--focus); outline-offset:2px; }
+  .hamicon, .hamicon::before, .hamicon::after{
+    content:""; display:block; width:18px; height:2px; background:var(--ink); border-radius:2px; position:relative; transition:transform .2s ease, opacity .2s ease;
+  }
+  .hamicon::before{ position:absolute; transform:translateY(-6px); }
+  .hamicon::after{ position:absolute; transform:translateY(6px); }
+  .hambtn[aria-expanded="true"] .hamicon{ background:transparent; }
+  .hambtn[aria-expanded="true"] .hamicon::before{ transform:rotate(45deg); }
+  .hambtn[aria-expanded="true"] .hamicon::after{ transform:rotate(-45deg); }
+  .navhint{ color:var(--muted); font-size:.9rem; font-weight:600; }
+
+  .navpanel{
+    position:relative; margin-top:.6rem; border:1px solid var(--border);
+    background: linear-gradient(180deg, #111C18, #0E1815);
+    border-radius:14px; padding:.6rem; box-shadow:0 8px 28px rgba(0,0,0,.35); display:none;
+  }
+  .navpanel.open{ display:block; }
+  .navgrid{ display:grid; grid-template-columns:1fr; gap:.5rem; }
+  .navlink{
+    appearance:none; width:100%; display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    padding:.85rem 1rem; border-radius:12px; border:1px solid var(--border);
+    background: #13201B; cursor:pointer; font-weight:800; color:var(--ink);
+    transition: transform .06s ease, border-color .2s ease, background .2s ease;
+  }
+  .navlink:hover{ background:#17251F; border-color:#2A3A34; transform: translateY(-1px); }
+  .chev{ font-weight:900; color:var(--muted); }
+  @media (min-width:560px){ .navgrid{ grid-template-columns:repeat(4,1fr); } }
+
+  /* Progress */
+  .progress{ height:6px; background:#0E1815; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .progress > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #6BE39B); box-shadow:0 0 12px #29ba69aa inset; }
+
+  /* Main content */
+  main{ flex:1; padding:1rem; display:flex; flex-direction:column; gap:1rem; }
+  .card{
+    background: linear-gradient(180deg, var(--surface), #101A16);
+    border:1px solid var(--border); border-radius:16px; padding:1rem;
+    box-shadow: 0 1px 0 rgba(255,255,255,.02) inset, 0 8px 28px rgba(0,0,0,.35);
+  }
+
+  .hole-header{ display:flex; align-items:baseline; justify-content:space-between; }
+  .hole-title{ font-size:1.15rem; font-weight:800; }
+  .badge{
+    display:inline-block; padding:.15rem .6rem; border:1px solid var(--border);
+    border-radius:999px; font-size:.75rem; color:var(--muted);
+    background:#16231E;
+  }
+
+  .hole-grid{ display:grid; grid-template-columns:repeat(9, 1fr); gap:6px; margin-top:.75rem; }
+  .hole-cell{
+    background:var(--hole); border:1px solid var(--border); border-radius:10px; text-align:center;
+    padding:.45rem 0; font-size:.8rem; color:#C8D6CE; cursor:pointer; transition:transform .06s ease, border-color .2s ease, background .2s ease;
+  }
+  .hole-cell:hover{ border-color:#2F413A; transform: translateY(-1px); }
+  .hole-cell.current{
+    background:linear-gradient(180deg, #183B2C, #163528);
+    color:#F0FFF7; border-color:#2F6E49; font-weight:800;
+    box-shadow:0 0 0 1px #2F6E49 inset, 0 10px 26px rgba(0,0,0,.25);
+  }
+
+  form{ display:grid; gap:1rem; }
+  .field{ display:grid; gap:.45rem; }
+  label{ font-weight:600; font-size:.92rem; color:var(--ink); }
+  input[type="number"]{
+    width:100%; background:#0F1916; color:var(--ink); border:1px solid var(--border);
+    border-radius:12px; padding:1rem .95rem; font-size:1rem; outline:none; transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  input[type="number"]:focus{ border-color:#2E8B5C; box-shadow:0 0 0 4px var(--focus); background:#101B17; }
+
+  .summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; text-align:center; margin-top:.25rem; }
+  .pill{
+    border:1px solid var(--border); background:#0F1916; border-radius:12px; padding:.7rem .6rem;
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset;
+  }
+  .pill .k{ display:block; color:var(--muted); font-size:.75rem; }
+  .pill .v{ display:block; font-weight:800; font-size:1.05rem; margin-top:.15rem; color:var(--ink); }
+
+  .actions{ position:sticky; bottom:0; left:0; right:0; z-index:5; margin-top:.5rem; }
+  .bar{
+    background:linear-gradient(180deg, rgba(16,26,22,.85), rgba(14,22,19,.92));
+    backdrop-filter: blur(8px);
+    border-top:1px solid var(--border);
+    display:grid; gap:.75rem; padding:1rem;
+  }
+
+  .btn{
+    appearance:none; border:none; border-radius:14px; font-weight:800; letter-spacing:.2px; padding:1rem 1.1rem; cursor:pointer; width:100%;
+    transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+
+  .btn.primary{
+    background: linear-gradient(180deg, var(--accent), #28B864);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 24px rgba(41, 186, 105, .25), 0 0 0 1px #1E7A4E inset;
+  }
+  .btn.primary:hover{
+    background: linear-gradient(180deg, #33D279, #2BC46C);
+    box-shadow: 0 16px 32px rgba(41,186,105,.33), 0 0 0 1px #1E7A4E inset;
+  }
+
+  .btn.secondary{
+    background:#0F1916; color:var(--ink); border:1px solid var(--border);
+  }
+  .btn.secondary:hover{ background:#13201B; border-color:#2A3A34; }
+
+  .btn.ghost{
+    background:transparent; color:var(--ink); border:1px dashed var(--border);
+  }
+  .btn.ghost:hover{ border-color:#335147; background:#0E1815; }
+
+  .footer-hint{ color:var(--muted); font-size:.82rem; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="frame" role="application">
+    <header>
+      <div class="topbar" aria-label="Start Round header">
+        <div class="header-left">
+          <span class="dot" aria-hidden="true"></span>
+          <div class="header-text">
+            <div id="holeTitle" class="title">Hole 1 of 18</div>
+            <div class="sub">
+              <span><span id="courseName">Loading…</span> • Par <span id="holePar">—</span></span>
+              <span>•</span>
+              <span class="who" id="playerName">—</span>
+            </div>
+          </div>
+        </div>
+        <img id="logo" src="Kikiscup-logo.png" alt="Kiki's Cup Logo">
+      </div>
+
+      <!-- Hamburger menu -->
+      <div class="navbar">
+        <div class="hambox">
+          <button class="hambtn" id="hambtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu">
+            <span class="hamicon" aria-hidden="true"></span>
+          </button>
+          <span class="navhint">Quick actions</span>
+        </div>
+        <div class="navpanel" id="navpanel" role="menu" aria-label="Primary actions">
+          <div class="navgrid">
+            
+            <button class="navlink" role="menuitem" data-nav="leaderboard"><span>Leaderboard</span><span class="chev">›</span></button>
+            <button class="navlink" role="menuitem" data-nav="signout"><span>Sign out</span><span class="chev">›</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress" aria-hidden="true"><span id="overallProg" style="width:0%"></span></div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="hole-header">
+          <h2 class="hole-title">Enter Your Score</h2>
+          <span class="badge">Par <span id="parBadge">—</span></span>
+        </div>
+
+        <div class="hole-grid" id="holeGrid" aria-label="Holes 1 to 18"></div>
+
+        <form id="scoreForm">
+          <div class="field">
+            <label for="strokes">Strokes (1–15)</label>
+            <input id="strokes" name="strokes" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="e.g., 4" />
+          </div>
+        </form>
+
+        <div style="display:flex; gap:.6rem; margin-top:.25rem;">
+          <button class="btn secondary" id="prevHoleBtn" type="button">← Prev Hole</button>
+          <button class="btn primary" id="nextHoleBtn" type="button">Next Hole →</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="round-summary">
+        <h2 id="round-summary" class="hole-title" style="font-size:1.05rem">Round Summary</h2>
+        <div class="summary">
+          <div class="pill"><span class="k">Front 9</span><span class="v" id="frontVal">—</span></div>
+          <div class="pill"><span class="k">Back 9</span><span class="v" id="backVal">—</span></div>
+          <div class="pill"><span class="k">Total</span><span class="v" id="totalVal">—</span></div>
+        </div>
+      </section>
+
+      <div class="actions" role="region" aria-label="Submit actions">
+        <div class="bar">
+          <button class="btn primary" id="finishBtn" type="button">Finish Round</button>
+          <button class="btn ghost" id="clearBtn" type="button">Clear This Hole</button>
+          <div class="footer-hint">Finishing locks your round. You’ll see a full card preview next.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<!-- ===== FULL APP SCRIPT (Firebase + UI) ===== -->
+<script type="module">
+/* =======================================================
+   Firebase + UI Logic (Start Round) — Persist + Resume
+   ======================================================= */
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {
+  initializeFirestore, doc, setDoc, addDoc, collection,
+  writeBatch, deleteField, onSnapshot, serverTimestamp, setLogLevel
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+/* ---------- Firebase Setup ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCjYMoPB3qgCiWAgieQxA_finCGKLiqyRU",
+  authDomain: "kikis-cup.firebaseapp.com",
+  projectId: "kikis-cup",
+  storageBucket: "kikis-cup.firebasestorage.app",
+  messagingSenderId: "144771718981",
+  appId: "1:144771718981:web:dd02a31a0be75541a3a82c",
+  measurementId: "G-VW4TVHNE5V"
+};
+
+let app; try { app = getApp(); } catch { app = initializeApp(firebaseConfig); }
+const db   = initializeFirestore(app, { experimentalAutoDetectLongPolling:true, useFetchStreams:true });
+setLogLevel('error');
+const auth = getAuth(app);
+
+/* ---------- Global State ---------- */
+let uid = null;
+let displayName = 'Niall';
+let course = null;
+let state  = { courseId:null, holes:{}, currentHole:1 };
+let editing = false;
+window.state = state;
+
+const LS_KEY = "kikis-start-round"; // local mirror
+
+/* ---------- UI + Course helpers ---------- */
+const COURSE_URL = 'course-pinecrest.json';
+const FALLBACK_COURSE = {
+  id:'pinecrest-gc', name:'Pinecrest GC',
+  holes:[{number:1,par:4},{number:2,par:4},{number:3,par:3},{number:4,par:5},{number:5,par:4},{number:6,par:4},{number:7,par:3},{number:8,par:4},{number:9,par:5},{number:10,par:4},{number:11,par:4},{number:12,par:5},{number:13,par:3},{number:14,par:4},{number:15,par:4},{number:16,par:3},{number:17,par:5},{number:18,par:4}]
+};
+async function loadCourse(){
+  try{
+    const res = await fetch(COURSE_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch{ return FALLBACK_COURSE; }
+}
+function courseId(){ return course?.id || "pinecrest-gc"; }
+function parAt(n){ return Number(course.holes[n-1]?.par ?? 4); }
+function sum(a){ return a.reduce((x,y)=>x+Number(y||0),0); }
+
+/* ---------- Auth ---------- */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){ location.href = "login.html"; return; }
+  uid = user.uid;
+  displayName = user.displayName || "Niall";
+  document.getElementById('playerName').textContent = displayName;
+
+  // Hydrate from localStorage immediately (snappy resume)
+  hydrateFromLocal();
+
+  await ensureRoundAndSubscribe();
+});
+window.signOutNow = async ()=>{ try{ await signOut(auth); }catch(e){ alert(e.message); } };
+
+/* ---------- Firestore Refs ---------- */
+function roundRef(){ return doc(db, "users", uid, "rounds", `${courseId()}-active`); }
+function holeDoc(n){ return doc(db, "users", uid, "rounds", `${courseId()}-active`, "holes", String(n)); }
+
+/* ---------- Leaderboard ---------- */
+function computeLeaderboardStats(){
+  const holes = state?.holes || {};
+  let thru=0, strokes=0, parThrough=0;
+  for(let i=1;i<=18;i++){
+    const v = Number(holes[i]);
+    const par = course?.holes?.[i-1]?.par ?? 4;
+    if(Number.isFinite(v) && v>0){ thru++; strokes += v; parThrough += par; } else break;
+  }
+  const toPar = thru ? (strokes - parThrough) : 0;
+  return { thru, totalStrokes: strokes, toPar };
+}
+async function publishLeaderboard(){
+  const { thru, totalStrokes, toPar } = computeLeaderboardStats();
+  await setDoc(doc(db, 'leaderboard', uid), {
+    userId: uid,
+    name: displayName,
+    courseId: courseId(),
+    thru,
+    totalStrokes,
+    toPar,
+    updatedAt: serverTimestamp()
+  }, { merge:true });
+}
+
+/* ---------- Round Init + Snapshot (NO wiping!) ---------- */
+async function ensureRoundAndSubscribe(){
+  // IMPORTANT: do NOT write holes:{} on init; that would wipe existing scores.
+  await setDoc(roundRef(), {
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    currentHole: state?.currentHole || 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  onSnapshot(roundRef(), (s)=>{
+    if(!s.exists()) return;
+    const d = s.data();
+
+    // Merge remote holes (numeric keys) without clearing local edits
+    const remote = Object.fromEntries(
+      Object.entries(d.holes || {}).map(([k,v]) => [Number(k), Number(v)])
+    );
+    for (let i = 1; i <= 18; i++) {
+      const rv = remote[i];
+      const lv = state.holes[i];
+      if (Number.isFinite(rv) && rv > 0) state.holes[i] = rv;
+      else if (!(Number.isFinite(lv) && lv > 0)) delete state.holes[i];
+    }
+
+    // Resume hole
+    state.currentHole = Number(d.currentHole || state.currentHole || 1);
+    if(d.ownerName) document.getElementById('playerName').textContent = d.ownerName;
+
+    persistToLocal();
+    refresh();
+    publishLeaderboard().catch(()=>{});
+  });
+}
+
+/* ---------- Save / Clear / Finalize ---------- */
+async function saveHole(holeNumber, strokes){
+  const n = Number(holeNumber);
+  const score = Number(strokes);
+  const par = course?.holes?.[n-1]?.par ?? 4;
+
+  const batch = writeBatch(db);
+  // Active round doc (update one hole)
+  batch.set(roundRef(), {
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    [`holes.${n}`]: score,
+    currentHole: n,
+    updatedAt: serverTimestamp()
+  }, { merge:true });
+
+  // Per-hole subdoc
+  batch.set(holeDoc(n), {
+    userId: uid,
+    userName: displayName,
+    courseId: courseId(),
+    hole: n,
+    score,
+    par,
+    updatedAt: serverTimestamp()
+  }, { merge:true });
+
+  await batch.commit();
+
+  // Flat record + audit (optional)
+  await setDoc(doc(db, "scores", `${uid}-${courseId()}-h${n}`), {
+    userId: uid,
+    userName: displayName,
+    courseId: courseId(),
+    hole: n,
+    score,
+    updatedAt: serverTimestamp(),
+  }, { merge:true });
+
+  await addDoc(collection(db, "scores_audit"), {
+    userId: uid,
+    userName: displayName,
+    courseId: courseId(),
+    hole: n,
+    score,
+    at: serverTimestamp()
+  });
+
+  persistToLocal();
+  await publishLeaderboard();
+}
+
+async function clearHole(n){
+  const batch = writeBatch(db);
+  batch.set(roundRef(), { ownerId: uid, [`holes.${n}`]: deleteField(), updatedAt: serverTimestamp() }, { merge:true });
+  batch.set(holeDoc(n), { userId: uid, hole:Number(n), score:null, updatedAt: serverTimestamp() }, { merge:true });
+  await batch.commit();
+
+  await setDoc(doc(db, "scores", `${uid}-${courseId()}-h${n}`), {
+    userId: uid, score: null, updatedAt: serverTimestamp()
+  }, { merge:true });
+
+  delete state.holes[n];
+  persistToLocal();
+  await publishLeaderboard();
+}
+
+function stampId(){
+  const d = new Date();
+  const pad = (n)=> String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+}
+async function finalizeRound(){
+  const holes = {...state?.holes||{}};
+  const id = `${courseId()}-${stampId()}`;
+  await setDoc(doc(db, "users", uid, "rounds", id), {
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    courseName: course?.name || null,
+    holes,
+    createdAt: serverTimestamp(),
+    finishedAt: serverTimestamp(),
+    status: "finished"
+  });
+
+  // Reset local + active pointer (don’t wipe historical holes in finished doc)
+  await setDoc(roundRef(), {
+    ownerId: uid,
+    currentHole: 1,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  state.holes = {};
+  state.currentHole = 1;
+  persistToLocal();
+
+  await publishLeaderboard();
+  return id;
+}
+async function setCurrentHole(n){
+  state.currentHole = Number(n);
+  persistToLocal();
+  await setDoc(roundRef(), { ownerId: uid, currentHole: Number(n), updatedAt: serverTimestamp() }, { merge:true });
+}
+
+/* ---------- Local persistence (fast resume) ---------- */
+function persistToLocal(){
+  try{
+    const data = { courseId: courseId(), currentHole: state.currentHole, holes: state.holes };
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  }catch{}
+}
+function hydrateFromLocal(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data?.courseId === courseId()){
+      state.currentHole = Number(data.currentHole || 1);
+      state.holes = Object.fromEntries(
+        Object.entries(data.holes || {}).map(([k,v])=>[Number(k),Number(v)])
+      );
+      refresh();
+    }
+  }catch{}
+}
+
+/* ---------- Bridge for UI calls ---------- */
+const report = (label) => (e) => { console.error(label, e); alert(`${label}: ${e.code||''} ${e.message||e}`); };
+window.onHoleSaved = (hole, strokes)=> saveHole(hole, strokes).catch(report('Save failed'));
+window.onHoleCleared = (hole)=> clearHole(hole).catch (report('Clear failed'));
+window.onCurrentHoleChanged = (n)=> setCurrentHole(n).catch(report('Nav failed'));
+window.finalizeRound = ()=> finalizeRound();
+
+/* =======================================================
+   UI Rendering + Events
+   ======================================================= */
+function computeSummary(){
+  const holes = state.holes || {};
+  const asNum = (v)=> {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  let f=0,b=0,fc=0,bc=0;
+  for(let i=1;i<=9;i++){ const v=asNum(holes[i]); if(v!=null){f+=v;fc++;} }
+  for(let i=10;i<=18;i++){ const v=asNum(holes[i]); if(v!=null){b+=v;bc++;} }
+  const total=f+b;
+  const thru = Array.from({length:18},(_,k)=>k+1).filter(i=>asNum(holes[i])!=null).length;
+  const throughPar = sum(course.holes.slice(0,thru).map(h=>Number(h.par||4)));
+  const toPar = thru?(total-throughPar):null;
+  const fmt=(s,p)=>p===0?`${s} (E)`: `${s} (${p>0?'+':''}${p})`;
+  return {
+    front:fc?fmt(f,f-sum(course.holes.slice(0,fc).map(h=>Number(h.par||4)))):'—',
+    back:bc?fmt(b,b-sum(course.holes.slice(9,9+bc).map(h=>Number(h.par||4)))):'—',
+    total:thru?fmt(total,toPar):'—',
+    totalStrokes:total,toPar,thru
+  };
+}
+function renderHeader(){
+  const n=state.currentHole, par=parAt(n);
+  document.getElementById('holeTitle').textContent=`Hole ${n} of 18`;
+  document.getElementById('holePar').textContent=par;
+  document.getElementById('parBadge').textContent=par;
+  document.getElementById('courseName').textContent=course?.name||'';
+  const pct=Math.round((computeSummary().thru/18)*100);
+  document.getElementById('overallProg').style.width=pct+'%';
+}
+function renderGrid(){
+  const g=document.getElementById('holeGrid'); g.innerHTML='';
+  for(let i=1;i<=18;i++){
+    const d=document.createElement('div');
+    d.className='hole-cell'+(i===state.currentHole?' current':'');
+    d.textContent=Number.isFinite(Number(state.holes[i]))?state.holes[i]:i;
+    d.title=`Hole ${i} (Par ${parAt(i)})`;
+    d.addEventListener('click',()=>{state.currentHole=i;refresh();window.onCurrentHoleChanged?.(i);});
+    g.appendChild(d);
+  }
+}
+function renderForm(){
+  if(editing)return;
+  const inp=document.getElementById('strokes');
+  const v=Number(state.holes[state.currentHole]);
+  inp.value=Number.isFinite(v)&&v>0?v:'';
+}
+function renderSummary(){
+  const s=computeSummary();
+  document.getElementById('frontVal').textContent=s.front;
+  document.getElementById('backVal').textContent=s.back;
+  document.getElementById('totalVal').textContent=s.total;
+}
+function updateLiveSummaryForInput(){
+  const n=state.currentHole; const raw=strokesEl.value; const v=Number(raw);
+  if(raw===''||!Number.isFinite(v)||v<1||v>15){delete state.holes[n];}
+  else{state.holes[n]=v;}
+  const cell=document.getElementById('holeGrid').children[n-1];
+  if(cell)cell.textContent=state.holes[n]??n;
+  renderSummary();
+}
+
+function nextHole(){ state.currentHole = (state.currentHole % 18) + 1; refresh(); window.onCurrentHoleChanged?.(state.currentHole); }
+function prevHole(){ state.currentHole = (state.currentHole - 2 + 18) % 18 + 1; refresh(); window.onCurrentHoleChanged?.(state.currentHole); }
+
+/* Hamburger menu */
+const hambtn = document.getElementById('hambtn');
+const panel  = document.getElementById('navpanel');
+function openMenu(){ panel.classList.add('open'); hambtn.setAttribute('aria-expanded','true'); panel.querySelector('[role="menuitem"]')?.focus(); }
+function closeMenu(){ panel.classList.remove('open'); hambtn.setAttribute('aria-expanded','false'); }
+hambtn.addEventListener('click', ()=> (hambtn.getAttribute('aria-expanded')==='true'?closeMenu():openMenu()));
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panel.classList.contains('open')) closeMenu(); });
+document.addEventListener('click', (e)=>{ if(!panel.contains(e.target) && !hambtn.contains(e.target)) closeMenu(); });
+panel.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-nav]'); if(!btn) return;
+  const which = btn.dataset.nav;
+  if(which==='leaderboard') location.href = 'leaderboard.html';
+  if(which==='start') closeMenu();
+  if(which==='continue'){
+    // Jump to first unscored OR stay on current hole if all scored so far
+    const firstUn = (()=>{ for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) return i; } return null; })();
+    state.currentHole = firstUn || state.currentHole || 1;
+    refresh();
+    window.onCurrentHoleChanged?.(state.currentHole);
+    closeMenu();
+  }
+  if(which==='signout'){ window.signOutNow?.(); }
+});
+
+/* Events */
+const strokesEl=document.getElementById('strokes');
+
+async function trySaveCurrent(){
+  const n   = state.currentHole;
+  const val = Number(strokesEl.value);
+  if (!Number.isFinite(val) || val < 1 || val > 15) return false;
+
+  // local UI update first
+  state.holes[n] = val;
+  const cell = document.getElementById('holeGrid').children[n-1];
+  if (cell) cell.textContent = val;
+  renderSummary();
+
+  try {
+    await saveHole(n, val);
+    return true;
+  } catch (e) {
+    alert(`Save failed: ${e.code||''} ${e.message||e}`);
+    return false;
+  }
+}
+
+strokesEl.addEventListener('focus', ()=>{ editing = true; });
+strokesEl.addEventListener('input', updateLiveSummaryForInput);
+strokesEl.addEventListener('blur',  async ()=>{ editing = false; await trySaveCurrent(); renderForm(); persistToLocal(); });
+strokesEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); strokesEl.blur(); }});
+
+document.getElementById('nextHoleBtn').addEventListener('click', async ()=>{
+  await trySaveCurrent();  // save + post
+  nextHole();              // then advance
+});
+document.getElementById('prevHoleBtn').addEventListener('click', async ()=>{
+  await trySaveCurrent();
+  prevHole();
+});
+
+document.getElementById('clearBtn').addEventListener('click', async ()=>{
+  const n = state.currentHole;
+  await clearHole(n);
+  refresh();
+});
+document.getElementById('finishBtn').addEventListener('click', async ()=>{
+  const missing = []; for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) missing.push(i); }
+  if(missing.length && !confirm(`You have ${missing.length} hole(s) without a score: ${missing.join(', ')}.\nSubmit anyway?`)) return;
+  try{ const newId = await finalizeRound(); alert('Round finished and saved!\nID: '+ newId); }
+  catch(e){ alert('Finish failed: ' + (e.code||'') + ' ' + (e.message||e)); }
+});
+
+function refresh(){ renderHeader(); renderGrid(); renderForm(); renderSummary(); }
+
+/* ---------- Boot ---------- */
+(async()=>{
+  course = await loadCourse();
+  state.courseId = course.id;
+  document.getElementById('courseName').textContent = course.name;
+
+  // If we arrived here from Leaderboard, local mirror makes the UI look right
+  // instantly; Firestore snapshot will reconcile shortly after.
+  hydrateFromLocal();
+  refresh();
+})();
+</script>
+</body>
+</html>
