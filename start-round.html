@@ -5,26 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Kiki’s Cup • Start Round</title>
 <style>
+  /* ============================
+     Modern Dark + Green Theme
+     ============================ */
   :root{
-    --bg:#0E1412; --panel:#0F1916; --surface:#121C19; --hole:#17231F;
-    --ink:#EAF2EC; --muted:#A7B6AB; --border:#24322D;
-    --accent:#2DCB71; --accent-ink:#07130D; --focus:#2DCB7133;
-    --danger:#EC5B5B; --good:#39D98A; --even:#A7B6AB; --bad:#FF6B6B;
+    --bg:#0E1412;           --panel:#0F1916;        --surface:#121C19;
+    --hole:#17231F;         --ink:#EAF2EC;          --muted:#A7B6AB;
+    --border:#24322D;       --accent:#2DCB71;       --accent-ink:#07130D;
+    --focus:#2DCB7133;      --danger:#EC5B5B;
+    --good:#39D98A;         --even:#A7B6AB;         --bad:#FF6B6B;
   }
+
   *{box-sizing:border-box;}
   html,body{height:100%; margin:0; padding:0;}
   body{
-    font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     color:var(--ink);
     background:
       radial-gradient(1200px 600px at 50% -240px, #14342755 0%, transparent 60%),
       linear-gradient(180deg, #0D1311, #0E1412 60%, #0A0F0E);
     display:flex; flex-direction:column; align-items:center;
   }
-  .frame{ width:100%; max-width:720px; min-height:100dvh; display:flex; flex-direction:column;
-    background:radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat; }
-  header{ position:sticky; top:0; z-index:20; background:rgba(15,25,22,.75);
-    backdrop-filter: blur(10px); border-bottom:1px solid var(--border); }
+
+  .frame{
+    width:100%; max-width:720px; min-height:100dvh; display:flex; flex-direction:column;
+    background: radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat;
+  }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(15,25,22,.75);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--border);
+  }
   .topbar{ display:flex; align-items:center; justify-content:space-between; padding:.9rem 1rem; gap:.75rem; }
   .header-left{ display:flex; align-items:center; gap:.75rem; }
   .header-text{ display:flex; flex-direction:column; gap:.15rem; }
@@ -35,20 +48,24 @@
   #logo{ width:30%; height:auto; flex-shrink:0; filter: drop-shadow(0 4px 16px rgba(0,0,0,.35)); }
   @media (max-width:480px){ #logo{ width:64px; } }
 
+  /* Navbar / Quick actions */
   .navbar{
-    position:relative; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    position:relative;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
     background:linear-gradient(180deg, rgba(20,33,29,.6), rgba(12,22,19,.85));
-    backdrop-filter: blur(6px); padding:.5rem 1rem;
+    backdrop-filter: blur(6px);
+    padding:.5rem 1rem;
   }
   .hambox{ display:flex; align-items:center; gap:.6rem; }
   .hambtn{
     appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
-    width:40px; height:40px; border-radius:12px; border:1px solid var(--border); background:#0F1916;
+    width:40px; height:40px; border-radius:12px; border:1px solid var(--border);
+    background: #0F1916;
   }
   .hambtn:focus-visible{ outline:4px solid var(--focus); outline-offset:2px; }
   .hamicon, .hamicon::before, .hamicon::after{
-    content:""; display:block; width:18px; height:2px; background:var(--ink); border-radius:2px; position:relative;
-    transition:transform .2s ease, opacity .2s ease;
+    content:""; display:block; width:18px; height:2px; background:var(--ink); border-radius:2px; position:relative; transition:transform .2s ease, opacity .2s ease;
   }
   .hamicon::before{ position:absolute; transform:translateY(-6px); }
   .hamicon::after{ position:absolute; transform:translateY(6px); }
@@ -59,35 +76,53 @@
 
   .navpanel{
     position:relative; margin-top:.6rem; border:1px solid var(--border);
-    background:linear-gradient(180deg, #111C18, #0E1815);
+    background: linear-gradient(180deg, #111C18, #0E1815);
     border-radius:14px; padding:.6rem; box-shadow:0 8px 28px rgba(0,0,0,.35); display:none;
   }
   .navpanel.open{ display:block; }
-  .navgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+
+  /* Always rows by default; never columns on mobile */
+  .navgrid{
+    display:grid;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+    gap:.5rem;
+  }
+  /* You can opt into columns only on large screens if desired */
+  @media (min-width:900px){
+    .navgrid{ grid-template-columns:repeat(2,1fr); }
+  }
+
   .navlink{
     appearance:none; width:100%; display:flex; align-items:center; justify-content:space-between; gap:.75rem;
     padding:.85rem 1rem; border-radius:12px; border:1px solid var(--border);
-    background:#13201B; cursor:pointer; font-weight:800; color:var(--ink);
+    background: #13201B; cursor:pointer; font-weight:800; color:var(--ink);
     transition: transform .06s ease, border-color .2s ease, background .2s ease;
   }
   .navlink:hover{ background:#17251F; border-color:#2A3A34; transform: translateY(-1px); }
   .chev{ font-weight:900; color:var(--muted); }
 
+  /* Progress */
   .progress{ height:6px; background:#0E1815; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
   .progress > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #6BE39B); box-shadow:0 0 12px #29ba69aa inset; }
 
+  /* Main content */
   main{ flex:1; padding:1rem; display:flex; flex-direction:column; gap:1rem; }
   .card{
-    background:linear-gradient(180deg, var(--surface), #101A16);
+    background: linear-gradient(180deg, var(--surface), #101A16);
     border:1px solid var(--border); border-radius:16px; padding:1rem;
-    box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 8px 28px rgba(0,0,0,.35);
+    box-shadow: 0 1px 0 rgba(255,255,255,.02) inset, 0 8px 28px rgba(0,0,0,.35);
   }
 
   .hole-header{ display:flex; align-items:baseline; justify-content:space-between; }
   .hole-title{ font-size:1.15rem; font-weight:800; }
-  .badge{ display:inline-block; padding:.15rem .6rem; border:1px solid var(--border); border-radius:999px; font-size:.75rem; color:var(--muted); background:#16231E; }
+  .badge{
+    display:inline-block; padding:.15rem .6rem; border:1px solid var(--border);
+    border-radius:999px; font-size:.75rem; color:var(--muted);
+    background:#16231E;
+  }
 
-  .hole-grid{ display:grid; grid-template-columns:repeat(9,1fr); gap:6px; margin-top:.75rem; }
+  .hole-grid{ display:grid; grid-template-columns:repeat(9, 1fr); gap:6px; margin-top:.75rem; }
   .hole-cell{
     background:var(--hole); border:1px solid var(--border); border-radius:10px; text-align:center;
     padding:.45rem 0; font-size:.8rem; color:#C8D6CE; cursor:pointer; transition:transform .06s ease, border-color .2s ease, background .2s ease;
@@ -109,25 +144,49 @@
   input[type="number"]:focus{ border-color:#2E8B5C; box-shadow:0 0 0 4px var(--focus); background:#101B17; }
 
   .summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; text-align:center; margin-top:.25rem; }
-  .pill{ border:1px solid var(--border); background:#0F1916; border-radius:12px; padding:.7rem .6rem; box-shadow:0 1px 0 rgba(255,255,255,.02) inset; }
+  .pill{
+    border:1px solid var(--border); background:#0F1916; border-radius:12px; padding:.7rem .6rem;
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset;
+  }
   .pill .k{ display:block; color:var(--muted); font-size:.75rem; }
   .pill .v{ display:block; font-weight:800; font-size:1.05rem; margin-top:.15rem; color:var(--ink); }
+
+  /* Footer actions are NOT sticky (scroll to them) */
+  .actions{ margin-top:.5rem; }
+  .bar{
+    background:linear-gradient(180deg, rgba(16,26,22,.85), rgba(14,22,19,.92));
+    backdrop-filter: blur(8px);
+    border-top:1px solid var(--border);
+    display:grid; gap:.75rem; padding:1rem;
+  }
 
   .btn{
     appearance:none; border:none; border-radius:14px; font-weight:800; letter-spacing:.2px; padding:1rem 1.1rem; cursor:pointer; width:100%;
     transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
   }
   .btn:active{ transform: translateY(1px); }
-  .btn.primary{ background:linear-gradient(180deg, var(--accent), #28B864); color:var(--accent-ink);
-    box-shadow:0 10px 24px rgba(41,186,105,.25), 0 0 0 1px #1E7A4E inset; }
-  .btn.primary:hover{ background:linear-gradient(180deg, #33D279, #2BC46C); box-shadow:0 16px 32px rgba(41,186,105,.33), 0 0 0 1px #1E7A4E inset; }
-  .btn.secondary{ background:#0F1916; color:var(--ink); border:1px solid var(--border); }
+
+  .btn.primary{
+    background: linear-gradient(180deg, var(--accent), #28B864);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 24px rgba(41, 186, 105, .25), 0 0 0 1px #1E7A4E inset;
+  }
+  .btn.primary:hover{
+    background: linear-gradient(180deg, #33D279, #2BC46C);
+    box-shadow: 0 16px 32px rgba(41,186,105,.33), 0 0 0 1px #1E7A4E inset;
+  }
+
+  .btn.secondary{
+    background:#0F1916; color:var(--ink); border:1px solid var(--border);
+  }
   .btn.secondary:hover{ background:#13201B; border-color:#2A3A34; }
-  .btn.ghost{ background:transparent; color:var(--ink); border:1px dashed var(--border); }
+
+  .btn.ghost{
+    background:transparent; color:var(--ink); border:1px dashed var(--border);
+  }
   .btn.ghost:hover{ border-color:#335147; background:#0E1815; }
 
   .footer-hint{ color:var(--muted); font-size:.82rem; text-align:center; }
-  .actions-card .btn + .btn{ margin-top:.6rem; }
 </style>
 </head>
 <body>
@@ -148,6 +207,7 @@
         <img id="logo" src="Kikiscup-logo.png" alt="Kiki's Cup Logo">
       </div>
 
+      <!-- Hamburger menu -->
       <div class="navbar">
         <div class="hambox">
           <button class="hambtn" id="hambtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu">
@@ -158,6 +218,7 @@
         <div class="navpanel" id="navpanel" role="menu" aria-label="Primary actions">
           <div class="navgrid">
             <button class="navlink" role="menuitem" data-nav="continue"><span>Continue Round</span><span class="chev">›</span></button>
+            <button class="navlink" role="menuitem" data-nav="new"><span>Start New Round</span><span class="chev">›</span></button>
             <button class="navlink" role="menuitem" data-nav="leaderboard"><span>Leaderboard</span><span class="chev">›</span></button>
             <button class="navlink" role="menuitem" data-nav="signout"><span>Sign out</span><span class="chev">›</span></button>
           </div>
@@ -198,24 +259,29 @@
         </div>
       </section>
 
-      <!-- Bottom actions (scroll to reach) -->
-      <section class="card actions-card" role="region" aria-label="Submit actions">
-        <button class="btn primary" id="finishBtn" type="button">Finish Round</button>
-        <button class="btn ghost" id="clearBtn" type="button">Clear This Hole</button>
-        <div class="footer-hint" style="margin-top:.4rem;">Finishing locks your round and posts final score to the leaderboard.</div>
-      </section>
+      <div class="actions" role="region" aria-label="Submit actions">
+        <div class="bar">
+          <button class="btn primary" id="finishBtn" type="button">Finish Round</button>
+          <button class="btn ghost" id="clearBtn" type="button">Clear This Hole</button>
+          <div class="footer-hint">Finishing locks your round and posts the final score to the leaderboard.</div>
+        </div>
+      </div>
     </main>
   </div>
 
+<!-- ===== FULL APP SCRIPT (Firebase + UI) ===== -->
 <script type="module">
+/* =======================================================
+   Firebase + UI Logic (Start Round) — Session-scoped LB
+   ======================================================= */
 import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {
-  initializeFirestore, doc, setDoc, addDoc, collection, writeBatch, deleteField,
-  onSnapshot, serverTimestamp, setLogLevel, runTransaction
+  initializeFirestore, doc, setDoc, addDoc, collection,
+  writeBatch, deleteField, onSnapshot, serverTimestamp, setLogLevel
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-/* Firebase */
+/* ---------- Firebase Setup ---------- */
 const firebaseConfig = {
   apiKey: "AIzaSyCjYMoPB3qgCiWAgieQxA_finCGKLiqyRU",
   authDomain: "kikis-cup.firebaseapp.com",
@@ -225,209 +291,273 @@ const firebaseConfig = {
   appId: "1:144771718981:web:dd02a31a0be75541a3a82c",
   measurementId: "G-VW4TVHNE5V"
 };
+
 let app; try { app = getApp(); } catch { app = initializeApp(firebaseConfig); }
-const db = initializeFirestore(app, { experimentalAutoDetectLongPolling:true, useFetchStreams:true });
+const db   = initializeFirestore(app, { experimentalAutoDetectLongPolling:true, useFetchStreams:true });
 setLogLevel('error');
 const auth = getAuth(app);
 
-/* State */
+/* ---------- Global State ---------- */
 let uid = null;
 let displayName = 'Niall';
 let course = null;
 let state  = { courseId:null, holes:{}, currentHole:1 };
 let editing = false;
-const LS_KEY = "kikis-start-round";
+window.state = state;
 
-/* Course */
-const COURSE_URL='course-pinecrest.json';
-const FALLBACK_COURSE={ id:'pinecrest-gc', name:'Pinecrest GC',
-  holes:[{number:1,par:4},{number:2,par:4},{number:3,par:3},{number:4,par:5},{number:5,par:4},{number:6,par:4},{number:7,par:3},{number:8,par:4},{number:9,par:5},{number:10,par:4},{number:11,par:4},{number:12,par:5},{number:13,par:3},{number:14,par:4},{number:15,par:4},{number:16,par:3},{number:17,par:5},{number:18,par:4}] };
-async function loadCourse(){ try{ const r=await fetch(COURSE_URL,{cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }catch{ return FALLBACK_COURSE; } }
-function courseId(){ return course?.id || 'pinecrest-gc'; }
+const LS_ROUND  = "kikis-start-round";
+const LS_SESS   = "kikis-active-session";
+
+/* ---------- UI + Course helpers ---------- */
+const COURSE_URL = 'course-pinecrest.json';
+const FALLBACK_COURSE = {
+  id:'pinecrest-gc', name:'Pinecrest GC',
+  holes:[{number:1,par:4},{number:2,par:4},{number:3,par:3},{number:4,par:5},{number:5,par:4},{number:6,par:4},{number:7,par:3},{number:8,par:4},{number:9,par:5},{number:10,par:4},{number:11,par:4},{number:12,par:5},{number:13,par:3},{number:14,par:4},{number:15,par:4},{number:16,par:3},{number:17,par:5},{number:18,par:4}]
+};
+async function loadCourse(){
+  try{
+    const res = await fetch(COURSE_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch{ return FALLBACK_COURSE; }
+}
+function courseId(){ return course?.id || "pinecrest-gc"; }
 function parAt(n){ return Number(course.holes[n-1]?.par ?? 4); }
 function sum(a){ return a.reduce((x,y)=>x+Number(y||0),0); }
+const pad = (n)=> String(n).padStart(2,'0');
 
-/* Auth */
+/* ---------- Session helpers ---------- */
+function getSessionId(){
+  let sid = localStorage.getItem(LS_SESS);
+  if(!sid){
+    const d = new Date();
+    sid = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    localStorage.setItem(LS_SESS, sid);
+  }
+  return sid;
+}
+function resetSession(){
+  localStorage.removeItem(LS_SESS);
+  return getSessionId();
+}
+
+/* ---------- Auth ---------- */
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){ location.href="login.html"; return; }
-  uid=user.uid; displayName=user.displayName||'Niall';
-  document.getElementById('playerName').textContent=displayName;
-  hydrateFromLocal();
-  await ensureRoundAndSubscribe();
+  if(!user){ location.href = "login.html"; return; }
+  uid = user.uid;
+  displayName = user.displayName || "Niall";
+  document.getElementById('playerName').textContent = displayName;
+
+  hydrateFromLocal();              // snappy resume
+  await ensureRoundAndSubscribe(); // then reconcile with Firestore
 });
-window.signOutNow = async ()=>{ try{ await signOut(auth); }catch(e){ alert(e.message);} };
+window.signOutNow = async ()=>{ try{ await signOut(auth); }catch(e){ alert(e.message); } };
 
-/* Refs */
-const roundRef = ()=> doc(db,"users",uid,"rounds",`${courseId()}-active`);
-const holeDoc  = (n)=> doc(db,"users",uid,"rounds",`${courseId()}-active`,"holes",String(n));
+/* ---------- Firestore Refs ---------- */
+function roundRef(){ return doc(db, "users", uid, "rounds", `${courseId()}-active`); }
+function holeDoc(n){ return doc(db, "users", uid, "rounds", `${courseId()}-active`, "holes", String(n)); }
+function leaderboardRef(){ return doc(db, "leaderboard", uid); }
 
-/* Leaderboard */
+/* ---------- Leaderboard (session-scoped) ---------- */
 function computeLeaderboardStats(){
-  const holes = state?.holes||{};
+  const holes = state?.holes || {};
   let thru=0, strokes=0, parThrough=0;
   for(let i=1;i<=18;i++){
-    const v=Number(holes[i]); const par=course?.holes?.[i-1]?.par ?? 4;
-    if(Number.isFinite(v)&&v>0){ thru++; strokes+=v; parThrough+=par; } else break;
+    const v = Number(holes[i]);
+    const par = course?.holes?.[i-1]?.par ?? 4;
+    if(Number.isFinite(v) && v>0){ thru++; strokes += v; parThrough += par; } else break;
   }
-  return { thru, totalStrokes:strokes, toPar: thru ? (strokes - parThrough) : 0 };
+  const toPar = thru ? (strokes - parThrough) : 0;
+  return { thru, totalStrokes: strokes, toPar };
+}
+async function publishLeaderboard({isFinished=false}={}){
+  const { thru, totalStrokes, toPar } = computeLeaderboardStats();
+  const sessionId = getSessionId();
+  await setDoc(leaderboardRef(), {
+    userId: uid,
+    name: displayName,
+    courseId: courseId(),
+    sessionId,
+    thru,
+    totalStrokes,
+    toPar,
+    isFinished,
+    updatedAt: serverTimestamp()
+  }, { merge:true });
 }
 
-/* Guarded publish: never overwrite a finished result */
-async function publishLeaderboard({ finished=false } = {}){
-  const payloadBase = computeLeaderboardStats();
-  const clientAt = Date.now();
-  await runTransaction(db, async (tx)=>{
-    const ref = doc(db,'leaderboard', uid);
-    const snap = await tx.get(ref);
-    const existing = snap.exists() ? snap.data() : {};
-    // If an existing finished record is present and this isn't a new finished result, skip
-    if (existing?.status === 'finished' && !finished) return;
-
-    tx.set(ref, {
-      userId: uid,
-      name: displayName,
-      courseId: courseId(),
-      ...payloadBase,
-      status: finished ? 'finished' : 'in-progress',
-      clientAt,
-      updatedAt: serverTimestamp()
-    }, { merge:true });
-  });
-}
-
-/* Round init + snapshot (no auto-publish) */
+/* ---------- Round Init + Snapshot (merge only) ---------- */
 async function ensureRoundAndSubscribe(){
   await setDoc(roundRef(), {
-    ownerId: uid, ownerName: displayName, courseId: courseId(),
-    currentHole: state?.currentHole || 1, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-  }, { merge:true });
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    currentHole: state?.currentHole || 1,
+    // do NOT set holes:{} here (no wiping)
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 
   onSnapshot(roundRef(), (s)=>{
     if(!s.exists()) return;
     const d = s.data();
 
-    const remote = Object.fromEntries(Object.entries(d.holes||{}).map(([k,v])=>[Number(k),Number(v)]));
-    for(let i=1;i<=18;i++){
-      const rv=remote[i], lv=state.holes[i];
-      if(Number.isFinite(rv)&&rv>0) state.holes[i]=rv;
-      else if(!(Number.isFinite(lv)&&lv>0)) delete state.holes[i];
+    // merge remote holes
+    const remote = Object.fromEntries(
+      Object.entries(d.holes || {}).map(([k,v]) => [Number(k), Number(v)])
+    );
+    for (let i = 1; i <= 18; i++) {
+      const rv = remote[i];
+      const lv = state.holes[i];
+      if (Number.isFinite(rv) && rv > 0) state.holes[i] = rv;
+      else if (!(Number.isFinite(lv) && lv > 0)) delete state.holes[i];
     }
-    state.currentHole = Number(d.currentHole || state.currentHole || 1);
-    if(d.ownerName) document.getElementById('playerName').textContent=d.ownerName;
 
-    // Do NOT publish from here; prevents stale overwrite.
+    state.currentHole = Number(d.currentHole || state.currentHole || 1);
+    if(d.ownerName) document.getElementById('playerName').textContent = d.ownerName;
+
     persistToLocal();
     refresh();
+    publishLeaderboard().catch(()=>{});
   });
 }
 
-/* Save / Clear / Finalize */
+/* ---------- Save / Clear / Finalize ---------- */
 async function saveHole(holeNumber, strokes){
-  const n=Number(holeNumber); const score=Number(strokes);
+  const n = Number(holeNumber);
+  const score = Number(strokes);
   const par = course?.holes?.[n-1]?.par ?? 4;
 
-  const batch=writeBatch(db);
+  const batch = writeBatch(db);
+
+  // Active round doc (update one hole)
   batch.set(roundRef(), {
-    ownerId: uid, ownerName: displayName, courseId: courseId(),
-    [`holes.${n}`]: score, currentHole:n, updatedAt: serverTimestamp()
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    [`holes.${n}`]: score,
+    currentHole: n,
+    updatedAt: serverTimestamp()
   }, { merge:true });
+
+  // Per-hole subdoc
   batch.set(holeDoc(n), {
-    userId: uid, userName: displayName, courseId: courseId(),
-    hole:n, score, par, updatedAt: serverTimestamp()
+    userId: uid,
+    userName: displayName,
+    courseId: courseId(),
+    hole: n,
+    score,
+    par,
+    updatedAt: serverTimestamp()
   }, { merge:true });
+
   await batch.commit();
 
-  await setDoc(doc(db,"scores",`${uid}-${courseId()}-h${n}`), {
-    userId: uid, userName: displayName, courseId: courseId(),
-    hole:n, score, updatedAt: serverTimestamp()
-  }, { merge:true });
-
-  await addDoc(collection(db,"scores_audit"), {
-    userId: uid, userName: displayName, courseId: courseId(),
-    hole:n, score, at: serverTimestamp()
+  // Optional audit tail
+  await addDoc(collection(db, "scores_audit"), {
+    userId: uid,
+    userName: displayName,
+    courseId: courseId(),
+    hole: n,
+    score,
+    at: serverTimestamp()
   });
 
   persistToLocal();
-  await publishLeaderboard(); // in-progress only
+  await publishLeaderboard();
 }
 
 async function clearHole(n){
-  const batch=writeBatch(db);
+  const batch = writeBatch(db);
   batch.set(roundRef(), { ownerId: uid, [`holes.${n}`]: deleteField(), updatedAt: serverTimestamp() }, { merge:true });
   batch.set(holeDoc(n), { userId: uid, hole:Number(n), score:null, updatedAt: serverTimestamp() }, { merge:true });
   await batch.commit();
-
-  await setDoc(doc(db,"scores",`${uid}-${courseId()}-h${n}`), { userId: uid, score:null, updatedAt: serverTimestamp() }, { merge:true });
-
   delete state.holes[n];
   persistToLocal();
-  await publishLeaderboard(); // still in-progress
+  await publishLeaderboard();
 }
 
-function stampId(){ const d=new Date(); const pad=(n)=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`; }
-
-function statsFromHoles(holesObj){
-  let thru=0,total=0,parThrough=0;
-  for(let i=1;i<=18;i++){
-    const v=Number(holesObj[i]); const p=Number(course?.holes?.[i-1]?.par)||4;
-    if(Number.isFinite(v)&&v>0){ thru++; total+=v; parThrough+=p; } else break;
-  }
-  return { thru, totalStrokes: total, toPar: thru ? (total - parThrough) : 0 };
+function stampId(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
 }
 
 async function finalizeRound(){
-  const holes = { ...(state?.holes||{}) };
+  const holes = {...state?.holes||{}};
   const id = `${courseId()}-${stampId()}`;
-
-  await setDoc(doc(db,"users",uid,"rounds",id), {
-    ownerId: uid, ownerName: displayName,
-    courseId: courseId(), courseName: course?.name||null,
-    holes, createdAt: serverTimestamp(), finishedAt: serverTimestamp(), status:"finished"
+  // store a finished copy
+  await setDoc(doc(db, "users", uid, "rounds", id), {
+    ownerId: uid,
+    ownerName: displayName,
+    courseId: courseId(),
+    courseName: course?.name || null,
+    holes,
+    createdAt: serverTimestamp(),
+    finishedAt: serverTimestamp(),
+    status: "finished"
   });
 
-  // Publish FINAL result (guarded: status=finished)
-  const finalStats = statsFromHoles(holes);
-  await runTransaction(db, async (tx)=>{
-    const ref = doc(db,'leaderboard', uid);
-    tx.set(ref, {
-      userId: uid, name: displayName, courseId: courseId(),
-      ...finalStats,
-      status:'finished',
-      clientAt: Date.now(),
-      updatedAt: serverTimestamp(),
-      finishedAt: serverTimestamp()
-    }, { merge:true });
-  });
+  // Publish final LB stats with isFinished flag (keeps row)
+  await publishLeaderboard({ isFinished:true });
 
-  // Reset active pointer (no holes payload)
-  await setDoc(roundRef(), { ownerId: uid, currentHole:1, updatedAt: serverTimestamp() }, { merge:true });
+  // reset active round (but do NOT touch leaderboard row)
+  await setDoc(roundRef(), { ownerId: uid, currentHole: 1, updatedAt: serverTimestamp(), holes:{} }, { merge:true });
 
-  state.holes={}; state.currentHole=1; persistToLocal();
+  // new session for the next round
+  resetSession();
+
+  // local reset
+  state.holes = {};
+  state.currentHole = 1;
+  persistToLocal();
+
   return id;
 }
 
 async function setCurrentHole(n){
-  state.currentHole=Number(n); persistToLocal();
+  state.currentHole = Number(n);
+  persistToLocal();
   await setDoc(roundRef(), { ownerId: uid, currentHole: Number(n), updatedAt: serverTimestamp() }, { merge:true });
 }
 
-/* Local persistence */
-function persistToLocal(){ try{
-  localStorage.setItem(LS_KEY, JSON.stringify({ courseId: courseId(), currentHole: state.currentHole, holes: state.holes }));
-} catch{} }
-function hydrateFromLocal(){ try{
-  const raw=localStorage.getItem(LS_KEY); if(!raw) return;
-  const d=JSON.parse(raw); if(d?.courseId!==courseId()) return;
-  state.currentHole=Number(d.currentHole||1);
-  state.holes=Object.fromEntries(Object.entries(d.holes||{}).map(([k,v])=>[Number(k),Number(v)]));
-  refresh();
-} catch{} }
+/* ---------- Local persistence ---------- */
+function persistToLocal(){
+  try{
+    const data = { courseId: courseId(), currentHole: state.currentHole, holes: state.holes };
+    localStorage.setItem(LS_ROUND, JSON.stringify(data));
+  }catch{}
+}
+function hydrateFromLocal(){
+  try{
+    const raw = localStorage.getItem(LS_ROUND);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data?.courseId){
+      state.currentHole = Number(data.currentHole || 1);
+      state.holes = Object.fromEntries(
+        Object.entries(data.holes || {}).map(([k,v])=>[Number(k),Number(v)])
+      );
+      refresh();
+    }
+  }catch{}
+}
 
-/* UI */
+/* ---------- Bridge for UI calls ---------- */
+const report = (label) => (e) => { console.error(label, e); alert(`${label}: ${e.code||''} ${e.message||e}`); };
+window.onHoleSaved = (hole, strokes)=> saveHole(hole, strokes).catch(report('Save failed'));
+window.onHoleCleared = (hole)=> clearHole(hole).catch (report('Clear failed'));
+window.onCurrentHoleChanged = (n)=> setCurrentHole(n).catch(report('Nav failed'));
+window.finalizeRound = ()=> finalizeRound();
+
+/* =======================================================
+   UI Rendering + Events
+   ======================================================= */
 function computeSummary(){
-  const holes=state.holes||{};
-  const asNum=(v)=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:null; };
+  const holes = state.holes || {};
+  const asNum = (v)=> {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
   let f=0,b=0,fc=0,bc=0;
   for(let i=1;i<=9;i++){ const v=asNum(holes[i]); if(v!=null){f+=v;fc++;} }
   for(let i=10;i<=18;i++){ const v=asNum(holes[i]); if(v!=null){b+=v;bc++;} }
@@ -459,80 +589,134 @@ function renderGrid(){
     d.className='hole-cell'+(i===state.currentHole?' current':'');
     d.textContent=Number.isFinite(Number(state.holes[i]))?state.holes[i]:i;
     d.title=`Hole ${i} (Par ${parAt(i)})`;
-    d.addEventListener('click',()=>{state.currentHole=i;refresh();setCurrentHole(i);});
+    d.addEventListener('click',()=>{state.currentHole=i;refresh();window.onCurrentHoleChanged?.(i);});
     g.appendChild(d);
   }
 }
-function renderForm(){ if(editing)return;
-  const inp=document.getElementById('strokes'); const v=Number(state.holes[state.currentHole]);
-  inp.value=Number.isFinite(v)&&v>0?v:''; }
-function renderSummary(){ const s=computeSummary();
+function renderForm(){
+  if(editing)return;
+  const inp=document.getElementById('strokes');
+  const v=Number(state.holes[state.currentHole]);
+  inp.value=Number.isFinite(v)&&v>0?v:'';
+}
+function renderSummary(){
+  const s=computeSummary();
   document.getElementById('frontVal').textContent=s.front;
   document.getElementById('backVal').textContent=s.back;
-  document.getElementById('totalVal').textContent=s.total; }
+  document.getElementById('totalVal').textContent=s.total;
+}
 function updateLiveSummaryForInput(){
   const n=state.currentHole; const raw=strokesEl.value; const v=Number(raw);
-  if(raw===''||!Number.isFinite(v)||v<1||v>15){ delete state.holes[n]; }
-  else{ state.holes[n]=v; }
+  if(raw===''||!Number.isFinite(v)||v<1||v>15){delete state.holes[n];}
+  else{state.holes[n]=v;}
   const cell=document.getElementById('holeGrid').children[n-1];
-  if(cell) cell.textContent=state.holes[n]??n;
+  if(cell)cell.textContent=state.holes[n]??n;
   renderSummary();
 }
-function nextHole(){ state.currentHole=(state.currentHole%18)+1; refresh(); setCurrentHole(state.currentHole); }
-function prevHole(){ state.currentHole=(state.currentHole-2+18)%18+1; refresh(); setCurrentHole(state.currentHole); }
 
-/* Menu */
-const hambtn=document.getElementById('hambtn'); const panel=document.getElementById('navpanel');
-function openMenu(){ panel.classList.add('open'); hambtn.setAttribute('aria-expanded','true'); }
+function nextHole(){ state.currentHole = (state.currentHole % 18) + 1; refresh(); window.onCurrentHoleChanged?.(state.currentHole); }
+function prevHole(){ state.currentHole = (state.currentHole - 2 + 18) % 18 + 1; refresh(); window.onCurrentHoleChanged?.(state.currentHole); }
+
+/* Hamburger menu */
+const hambtn = document.getElementById('hambtn');
+const panel  = document.getElementById('navpanel');
+function openMenu(){ panel.classList.add('open'); hambtn.setAttribute('aria-expanded','true'); panel.querySelector('[role="menuitem"]')?.focus(); }
 function closeMenu(){ panel.classList.remove('open'); hambtn.setAttribute('aria-expanded','false'); }
 hambtn.addEventListener('click', ()=> (hambtn.getAttribute('aria-expanded')==='true'?closeMenu():openMenu()));
-document.addEventListener('click', (e)=>{ if(!panel.contains(e.target)&&!hambtn.contains(e.target)) closeMenu(); });
-panel.addEventListener('click', (e)=>{
-  const btn=e.target.closest('[data-nav]'); if(!btn) return;
-  const which=btn.dataset.nav;
-  if(which==='leaderboard') location.href='leaderboard.html';
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panel.classList.contains('open')) closeMenu(); });
+document.addEventListener('click', (e)=>{ if(!panel.contains(e.target) && !hambtn.contains(e.target)) closeMenu(); });
+panel.addEventListener('click', async (e)=>{
+  const btn = e.target.closest('[data-nav]'); if(!btn) return;
+  const which = btn.dataset.nav;
+  if(which==='leaderboard') location.href = 'leaderboard.html';
   if(which==='continue'){
-    const firstUn=(()=>{ for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) return i; } return null;})();
-    state.currentHole=firstUn||state.currentHole||1; refresh(); setCurrentHole(state.currentHole); closeMenu();
+    const firstUn = (()=>{ for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) return i; } return null; })();
+    state.currentHole = firstUn || state.currentHole || 1;
+    refresh(); window.onCurrentHoleChanged?.(state.currentHole); closeMenu();
+  }
+  if(which==='new'){
+    const confirmNew = confirm("Start a new round? This keeps your last leaderboard score but clears the active card.");
+    if(!confirmNew) return;
+    resetSession();                   // new session for LB
+    state.holes = {}; state.currentHole = 1;
+    await setDoc(roundRef(), { ownerId: uid, currentHole:1, holes:{}, updatedAt: serverTimestamp() }, { merge:true });
+    persistToLocal();
+    refresh(); closeMenu();
+    // publish a fresh baseline row for the new round
+    await publishLeaderboard({isFinished:false}).catch(()=>{});
   }
   if(which==='signout'){ window.signOutNow?.(); }
 });
 
 /* Events */
 const strokesEl=document.getElementById('strokes');
-async function trySaveCurrent(){
-  const n=state.currentHole; const val=Number(strokesEl.value);
-  if(!Number.isFinite(val)||val<1||val>15) return false;
-  state.holes[n]=val; const cell=document.getElementById('holeGrid').children[n-1]; if(cell) cell.textContent=val; renderSummary();
-  try{ await saveHole(n,val); return true; }catch(e){ alert(`Save failed: ${e.code||''} ${e.message||e}`); return false; }
-}
-strokesEl.addEventListener('focus', ()=>{ editing=true; });
-strokesEl.addEventListener('input', updateLiveSummaryForInput);
-strokesEl.addEventListener('blur', async ()=>{ editing=false; await trySaveCurrent(); renderForm(); persistToLocal(); });
-strokesEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); strokesEl.blur(); }});
 
-document.getElementById('nextHoleBtn').addEventListener('click', async ()=>{ await trySaveCurrent(); nextHole(); });
-document.getElementById('prevHoleBtn').addEventListener('click', async ()=>{ await trySaveCurrent(); prevHole(); });
+async function trySaveCurrent(){
+  const n   = state.currentHole;
+  const val = Number(strokesEl.value);
+  if (!Number.isFinite(val) || val < 1 || val > 15) return false;
+
+  // local UI update first
+  state.holes[n] = val;
+  const cell = document.getElementById('holeGrid').children[n-1];
+  if (cell) cell.textContent = val;
+  renderSummary();
+
+  try {
+    await saveHole(n, val);
+    return true;
+  } catch (e) {
+    alert(`Save failed: ${e.code||''} ${e.message||e}`);
+    return false;
+  }
+}
+
+strokesEl.addEventListener('focus', ()=>{ editing = true; });
+strokesEl.addEventListener('input', updateLiveSummaryForInput);
+strokesEl.addEventListener('blur',  async ()=>{ editing = false; await trySaveCurrent(); renderForm(); persistToLocal(); });
+strokesEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); strokesEl.blur(); }});
+
+document.getElementById('nextHoleBtn').addEventListener('click', async ()=>{
+  await trySaveCurrent();  // save + post
+  nextHole();              // then advance
+});
+document.getElementById('prevHoleBtn').addEventListener('click', async ()=>{
+  await trySaveCurrent();
+  prevHole();
+});
 
 document.getElementById('clearBtn').addEventListener('click', async ()=>{
-  const n=state.currentHole; await clearHole(n); refresh();
+  const n = state.currentHole;
+  await clearHole(n);
+  refresh();
 });
 document.getElementById('finishBtn').addEventListener('click', async ()=>{
-  const missing=[]; for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) missing.push(i); }
+  const missing = []; for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) missing.push(i); }
   if(missing.length && !confirm(`You have ${missing.length} hole(s) without a score: ${missing.join(', ')}.\nSubmit anyway?`)) return;
-  try{ const newId=await finalizeRound(); alert('Round finished and saved!\nID: '+newId); }
-  catch(e){ alert('Finish failed: ' + (e.code||'') + ' ' + (e.message||e)); }
+  try{
+    const newId = await finalizeRound();
+    alert('Round finished and saved!\nID: '+ newId);
+  }catch(e){
+    alert('Finish failed: ' + (e.code||'') + ' ' + (e.message||e));
+  }
 });
 
 function refresh(){ renderHeader(); renderGrid(); renderForm(); renderSummary(); }
 
-/* Boot */
+/* ---------- Boot ---------- */
 (async()=>{
   course = await loadCourse();
   state.courseId = course.id;
   document.getElementById('courseName').textContent = course.name;
+
+  // ensure a session id exists for this round (and publish a baseline row once)
+  getSessionId();
+
   hydrateFromLocal();
   refresh();
+
+  // write an initial leaderboard row if none exists yet this load
+  await publishLeaderboard({isFinished:false}).catch(()=>{});
 })();
 </script>
 </body>
