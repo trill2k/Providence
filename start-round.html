@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Kiki’s Cup • Start Round</title>
 <style>
-  /* ============================
-     Modern Dark + Green Theme
-     ============================ */
   :root{
     --bg:#0E1412; --panel:#0F1916; --surface:#121C19; --hole:#17231F;
     --ink:#EAF2EC; --muted:#A7B6AB; --border:#24322D;
@@ -24,15 +21,10 @@
       linear-gradient(180deg, #0D1311, #0E1412 60%, #0A0F0E);
     display:flex; flex-direction:column; align-items:center;
   }
-  .frame{
-    width:100%; max-width:720px; min-height:100dvh; display:flex; flex-direction:column;
-    background:radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat;
-  }
-  header{
-    position:sticky; top:0; z-index:20;
-    background:rgba(15,25,22,.75); backdrop-filter: blur(10px);
-    border-bottom:1px solid var(--border);
-  }
+  .frame{ width:100%; max-width:720px; min-height:100dvh; display:flex; flex-direction:column;
+    background:radial-gradient(1400px 700px at 50% -260px, #0F2A2055 0%, transparent 60%) no-repeat; }
+  header{ position:sticky; top:0; z-index:20; background:rgba(15,25,22,.75);
+    backdrop-filter: blur(10px); border-bottom:1px solid var(--border); }
   .topbar{ display:flex; align-items:center; justify-content:space-between; padding:.9rem 1rem; gap:.75rem; }
   .header-left{ display:flex; align-items:center; gap:.75rem; }
   .header-text{ display:flex; flex-direction:column; gap:.15rem; }
@@ -126,11 +118,8 @@
     transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
   }
   .btn:active{ transform: translateY(1px); }
-  .btn.primary{
-    background:linear-gradient(180deg, var(--accent), #28B864);
-    color:var(--accent-ink);
-    box-shadow:0 10px 24px rgba(41,186,105,.25), 0 0 0 1px #1E7A4E inset;
-  }
+  .btn.primary{ background:linear-gradient(180deg, var(--accent), #28B864); color:var(--accent-ink);
+    box-shadow:0 10px 24px rgba(41,186,105,.25), 0 0 0 1px #1E7A4E inset; }
   .btn.primary:hover{ background:linear-gradient(180deg, #33D279, #2BC46C); box-shadow:0 16px 32px rgba(41,186,105,.33), 0 0 0 1px #1E7A4E inset; }
   .btn.secondary{ background:#0F1916; color:var(--ink); border:1px solid var(--border); }
   .btn.secondary:hover{ background:#13201B; border-color:#2A3A34; }
@@ -209,7 +198,7 @@
         </div>
       </section>
 
-      <!-- Bottom actions (NON-STICKY; scroll to reach) -->
+      <!-- Bottom actions (scroll to reach) -->
       <section class="card actions-card" role="region" aria-label="Submit actions">
         <button class="btn primary" id="finishBtn" type="button">Finish Round</button>
         <button class="btn ghost" id="clearBtn" type="button">Clear This Hole</button>
@@ -218,16 +207,15 @@
     </main>
   </div>
 
-<!-- ===== FULL APP SCRIPT (Firebase + UI) ===== -->
 <script type="module">
 import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {
-  initializeFirestore, doc, setDoc, addDoc, collection,
-  writeBatch, deleteField, onSnapshot, serverTimestamp, setLogLevel
+  initializeFirestore, doc, setDoc, addDoc, collection, writeBatch, deleteField,
+  onSnapshot, serverTimestamp, setLogLevel, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-/* ---------- Firebase Setup ---------- */
+/* Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyCjYMoPB3qgCiWAgieQxA_finCGKLiqyRU",
   authDomain: "kikis-cup.firebaseapp.com",
@@ -242,233 +230,204 @@ const db = initializeFirestore(app, { experimentalAutoDetectLongPolling:true, us
 setLogLevel('error');
 const auth = getAuth(app);
 
-/* ---------- Global State ---------- */
+/* State */
 let uid = null;
 let displayName = 'Niall';
 let course = null;
-let state = { courseId:null, holes:{}, currentHole:1 };
+let state  = { courseId:null, holes:{}, currentHole:1 };
 let editing = false;
 const LS_KEY = "kikis-start-round";
 
-/* ---------- Course helpers ---------- */
-const COURSE_URL = 'course-pinecrest.json';
-const FALLBACK_COURSE = {
-  id:'pinecrest-gc', name:'Pinecrest GC',
-  holes:[{number:1,par:4},{number:2,par:4},{number:3,par:3},{number:4,par:5},{number:5,par:4},{number:6,par:4},{number:7,par:3},{number:8,par:4},{number:9,par:5},{number:10,par:4},{number:11,par:4},{number:12,par:5},{number:13,par:3},{number:14,par:4},{number:15,par:4},{number:16,par:3},{number:17,par:5},{number:18,par:4}]
-};
-async function loadCourse(){
-  try{
-    const res = await fetch(COURSE_URL, {cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    return await res.json();
-  }catch{ return FALLBACK_COURSE; }
-}
-function courseId(){ return course?.id || "pinecrest-gc"; }
+/* Course */
+const COURSE_URL='course-pinecrest.json';
+const FALLBACK_COURSE={ id:'pinecrest-gc', name:'Pinecrest GC',
+  holes:[{number:1,par:4},{number:2,par:4},{number:3,par:3},{number:4,par:5},{number:5,par:4},{number:6,par:4},{number:7,par:3},{number:8,par:4},{number:9,par:5},{number:10,par:4},{number:11,par:4},{number:12,par:5},{number:13,par:3},{number:14,par:4},{number:15,par:4},{number:16,par:3},{number:17,par:5},{number:18,par:4}] };
+async function loadCourse(){ try{ const r=await fetch(COURSE_URL,{cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }catch{ return FALLBACK_COURSE; } }
+function courseId(){ return course?.id || 'pinecrest-gc'; }
 function parAt(n){ return Number(course.holes[n-1]?.par ?? 4); }
 function sum(a){ return a.reduce((x,y)=>x+Number(y||0),0); }
 
-/* ---------- Auth ---------- */
+/* Auth */
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){ location.href = "login.html"; return; }
-  uid = user.uid;
-  displayName = user.displayName || "Niall";
-  document.getElementById('playerName').textContent = displayName;
-
+  if(!user){ location.href="login.html"; return; }
+  uid=user.uid; displayName=user.displayName||'Niall';
+  document.getElementById('playerName').textContent=displayName;
   hydrateFromLocal();
   await ensureRoundAndSubscribe();
 });
-window.signOutNow = async ()=>{ try{ await signOut(auth); }catch(e){ alert(e.message); } };
+window.signOutNow = async ()=>{ try{ await signOut(auth); }catch(e){ alert(e.message);} };
 
-/* ---------- Firestore Refs ---------- */
-function roundRef(){ return doc(db, "users", uid, "rounds", `${courseId()}-active`); }
-function holeDoc(n){ return doc(db, "users", uid, "rounds", `${courseId()}-active`, "holes", String(n)); }
+/* Refs */
+const roundRef = ()=> doc(db,"users",uid,"rounds",`${courseId()}-active`);
+const holeDoc  = (n)=> doc(db,"users",uid,"rounds",`${courseId()}-active`,"holes",String(n));
 
-/* ---------- Leaderboard helpers ---------- */
+/* Leaderboard */
 function computeLeaderboardStats(){
-  const holes = state?.holes || {};
+  const holes = state?.holes||{};
   let thru=0, strokes=0, parThrough=0;
   for(let i=1;i<=18;i++){
-    const v = Number(holes[i]);
-    const par = course?.holes?.[i-1]?.par ?? 4;
-    if(Number.isFinite(v) && v>0){ thru++; strokes += v; parThrough += par; } else break;
+    const v=Number(holes[i]); const par=course?.holes?.[i-1]?.par ?? 4;
+    if(Number.isFinite(v)&&v>0){ thru++; strokes+=v; parThrough+=par; } else break;
   }
-  const toPar = thru ? (strokes - parThrough) : 0;
-  return { thru, totalStrokes: strokes, toPar };
-}
-async function publishLeaderboard(){
-  const { thru, totalStrokes, toPar } = computeLeaderboardStats();
-  await setDoc(doc(db, 'leaderboard', uid), {
-    userId: uid,
-    name: displayName,
-    courseId: courseId(),
-    thru,
-    totalStrokes,
-    toPar,
-    updatedAt: serverTimestamp()
-  }, { merge:true });
+  return { thru, totalStrokes:strokes, toPar: thru ? (strokes - parThrough) : 0 };
 }
 
-/* ---------- Round Init + Snapshot (no auto-publish) ---------- */
+/* Guarded publish: never overwrite a finished result */
+async function publishLeaderboard({ finished=false } = {}){
+  const payloadBase = computeLeaderboardStats();
+  const clientAt = Date.now();
+  await runTransaction(db, async (tx)=>{
+    const ref = doc(db,'leaderboard', uid);
+    const snap = await tx.get(ref);
+    const existing = snap.exists() ? snap.data() : {};
+    // If an existing finished record is present and this isn't a new finished result, skip
+    if (existing?.status === 'finished' && !finished) return;
+
+    tx.set(ref, {
+      userId: uid,
+      name: displayName,
+      courseId: courseId(),
+      ...payloadBase,
+      status: finished ? 'finished' : 'in-progress',
+      clientAt,
+      updatedAt: serverTimestamp()
+    }, { merge:true });
+  });
+}
+
+/* Round init + snapshot (no auto-publish) */
 async function ensureRoundAndSubscribe(){
   await setDoc(roundRef(), {
-    ownerId: uid,
-    ownerName: displayName,
-    courseId: courseId(),
-    currentHole: state?.currentHole || 1,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  }, { merge: true });
+    ownerId: uid, ownerName: displayName, courseId: courseId(),
+    currentHole: state?.currentHole || 1, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+  }, { merge:true });
 
   onSnapshot(roundRef(), (s)=>{
     if(!s.exists()) return;
     const d = s.data();
 
-    // merge holes from server
-    const remote = Object.fromEntries(
-      Object.entries(d.holes || {}).map(([k,v]) => [Number(k), Number(v)])
-    );
-    for (let i = 1; i <= 18; i++) {
-      const rv = remote[i];
-      const lv = state.holes[i];
-      if (Number.isFinite(rv) && rv > 0) state.holes[i] = rv;
-      else if (!(Number.isFinite(lv) && lv > 0)) delete state.holes[i];
+    const remote = Object.fromEntries(Object.entries(d.holes||{}).map(([k,v])=>[Number(k),Number(v)]));
+    for(let i=1;i<=18;i++){
+      const rv=remote[i], lv=state.holes[i];
+      if(Number.isFinite(rv)&&rv>0) state.holes[i]=rv;
+      else if(!(Number.isFinite(lv)&&lv>0)) delete state.holes[i];
     }
-
     state.currentHole = Number(d.currentHole || state.currentHole || 1);
-    if(d.ownerName) document.getElementById('playerName').textContent = d.ownerName;
+    if(d.ownerName) document.getElementById('playerName').textContent=d.ownerName;
 
-    // IMPORTANT: do NOT publish from here to avoid overwriting finished totals.
+    // Do NOT publish from here; prevents stale overwrite.
     persistToLocal();
     refresh();
   });
 }
 
-/* ---------- Save / Clear / Finalize ---------- */
+/* Save / Clear / Finalize */
 async function saveHole(holeNumber, strokes){
-  const n = Number(holeNumber);
-  const score = Number(strokes);
+  const n=Number(holeNumber); const score=Number(strokes);
   const par = course?.holes?.[n-1]?.par ?? 4;
 
-  const batch = writeBatch(db);
+  const batch=writeBatch(db);
   batch.set(roundRef(), {
     ownerId: uid, ownerName: displayName, courseId: courseId(),
-    [`holes.${n}`]: score, currentHole: n, updatedAt: serverTimestamp()
+    [`holes.${n}`]: score, currentHole:n, updatedAt: serverTimestamp()
   }, { merge:true });
-
   batch.set(holeDoc(n), {
     userId: uid, userName: displayName, courseId: courseId(),
-    hole: n, score, par, updatedAt: serverTimestamp()
+    hole:n, score, par, updatedAt: serverTimestamp()
   }, { merge:true });
   await batch.commit();
 
-  await setDoc(doc(db, "scores", `${uid}-${courseId()}-h${n}`), {
+  await setDoc(doc(db,"scores",`${uid}-${courseId()}-h${n}`), {
     userId: uid, userName: displayName, courseId: courseId(),
-    hole: n, score, updatedAt: serverTimestamp(),
+    hole:n, score, updatedAt: serverTimestamp()
   }, { merge:true });
 
-  await addDoc(collection(db, "scores_audit"), {
+  await addDoc(collection(db,"scores_audit"), {
     userId: uid, userName: displayName, courseId: courseId(),
-    hole: n, score, at: serverTimestamp()
+    hole:n, score, at: serverTimestamp()
   });
 
   persistToLocal();
-  await publishLeaderboard(); // publish only on saves
+  await publishLeaderboard(); // in-progress only
 }
 
 async function clearHole(n){
-  const batch = writeBatch(db);
+  const batch=writeBatch(db);
   batch.set(roundRef(), { ownerId: uid, [`holes.${n}`]: deleteField(), updatedAt: serverTimestamp() }, { merge:true });
   batch.set(holeDoc(n), { userId: uid, hole:Number(n), score:null, updatedAt: serverTimestamp() }, { merge:true });
   await batch.commit();
 
-  await setDoc(doc(db, "scores", `${uid}-${courseId()}-h${n}`), {
-    userId: uid, score: null, updatedAt: serverTimestamp()
-  }, { merge:true });
+  await setDoc(doc(db,"scores",`${uid}-${courseId()}-h${n}`), { userId: uid, score:null, updatedAt: serverTimestamp() }, { merge:true });
 
   delete state.holes[n];
   persistToLocal();
-  await publishLeaderboard();
+  await publishLeaderboard(); // still in-progress
 }
 
-function stampId(){
-  const d = new Date();
-  const pad = (n)=> String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
-}
+function stampId(){ const d=new Date(); const pad=(n)=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`; }
+
 function statsFromHoles(holesObj){
-  let thru=0,totalStrokes=0,parThrough=0;
+  let thru=0,total=0,parThrough=0;
   for(let i=1;i<=18;i++){
-    const v=Number(holesObj[i]);
-    if(Number.isFinite(v)&&v>0){ thru++; totalStrokes+=v; parThrough+=(Number(course?.holes?.[i-1]?.par)||4); }
-    else break;
+    const v=Number(holesObj[i]); const p=Number(course?.holes?.[i-1]?.par)||4;
+    if(Number.isFinite(v)&&v>0){ thru++; total+=v; parThrough+=p; } else break;
   }
-  return { thru, totalStrokes, toPar: thru ? (totalStrokes - parThrough) : 0 };
+  return { thru, totalStrokes: total, toPar: thru ? (total - parThrough) : 0 };
 }
 
 async function finalizeRound(){
-  // snapshot current holes FIRST
-  const holes = { ...(state?.holes || {}) };
+  const holes = { ...(state?.holes||{}) };
   const id = `${courseId()}-${stampId()}`;
 
-  // write finished round
-  await setDoc(doc(db, "users", uid, "rounds", id), {
+  await setDoc(doc(db,"users",uid,"rounds",id), {
     ownerId: uid, ownerName: displayName,
-    courseId: courseId(), courseName: course?.name || null,
-    holes, createdAt: serverTimestamp(), finishedAt: serverTimestamp(),
-    status: "finished"
+    courseId: courseId(), courseName: course?.name||null,
+    holes, createdAt: serverTimestamp(), finishedAt: serverTimestamp(), status:"finished"
   });
 
-  // publish FINAL totals to leaderboard
-  const { thru, totalStrokes, toPar } = statsFromHoles(holes);
-  await setDoc(doc(db, "leaderboard", uid), {
-    userId: uid, name: displayName, courseId: courseId(),
-    thru, totalStrokes, toPar,
-    updatedAt: serverTimestamp(), finishedAt: serverTimestamp(), status: "finished"
-  }, { merge: true });
+  // Publish FINAL result (guarded: status=finished)
+  const finalStats = statsFromHoles(holes);
+  await runTransaction(db, async (tx)=>{
+    const ref = doc(db,'leaderboard', uid);
+    tx.set(ref, {
+      userId: uid, name: displayName, courseId: courseId(),
+      ...finalStats,
+      status:'finished',
+      clientAt: Date.now(),
+      updatedAt: serverTimestamp(),
+      finishedAt: serverTimestamp()
+    }, { merge:true });
+  });
 
-  // reset the active pointer WITHOUT holes in payload (we don't send holes:{})
-  await setDoc(roundRef(), { ownerId: uid, currentHole: 1, updatedAt: serverTimestamp() }, { merge: true });
+  // Reset active pointer (no holes payload)
+  await setDoc(roundRef(), { ownerId: uid, currentHole:1, updatedAt: serverTimestamp() }, { merge:true });
 
-  // local reset (doesn't auto-publish anymore)
-  state.holes = {};
-  state.currentHole = 1;
-  persistToLocal();
-
+  state.holes={}; state.currentHole=1; persistToLocal();
   return id;
 }
 
 async function setCurrentHole(n){
-  state.currentHole = Number(n);
-  persistToLocal();
+  state.currentHole=Number(n); persistToLocal();
   await setDoc(roundRef(), { ownerId: uid, currentHole: Number(n), updatedAt: serverTimestamp() }, { merge:true });
 }
 
-/* ---------- Local persistence ---------- */
-function persistToLocal(){
-  try{
-    const data = { courseId: courseId(), currentHole: state.currentHole, holes: state.holes };
-    localStorage.setItem(LS_KEY, JSON.stringify(data));
-  }catch{}
-}
-function hydrateFromLocal(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw) return;
-    const data = JSON.parse(raw);
-    if(data?.courseId === courseId()){
-      state.currentHole = Number(data.currentHole || 1);
-      state.holes = Object.fromEntries(
-        Object.entries(data.holes || {}).map(([k,v])=>[Number(k),Number(v)])
-      );
-      refresh();
-    }
-  }catch{}
-}
+/* Local persistence */
+function persistToLocal(){ try{
+  localStorage.setItem(LS_KEY, JSON.stringify({ courseId: courseId(), currentHole: state.currentHole, holes: state.holes }));
+} catch{} }
+function hydrateFromLocal(){ try{
+  const raw=localStorage.getItem(LS_KEY); if(!raw) return;
+  const d=JSON.parse(raw); if(d?.courseId!==courseId()) return;
+  state.currentHole=Number(d.currentHole||1);
+  state.holes=Object.fromEntries(Object.entries(d.holes||{}).map(([k,v])=>[Number(k),Number(v)]));
+  refresh();
+} catch{} }
 
-/* ---------- UI ---------- */
+/* UI */
 function computeSummary(){
-  const holes = state.holes || {};
-  const asNum = (v)=>{ const n=Number(v); return Number.isFinite(n)&&n>0 ? n : null; };
+  const holes=state.holes||{};
+  const asNum=(v)=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:null; };
   let f=0,b=0,fc=0,bc=0;
   for(let i=1;i<=9;i++){ const v=asNum(holes[i]); if(v!=null){f+=v;fc++;} }
   for(let i=10;i<=18;i++){ const v=asNum(holes[i]); if(v!=null){b+=v;bc++;} }
@@ -504,44 +463,37 @@ function renderGrid(){
     g.appendChild(d);
   }
 }
-function renderForm(){
-  if(editing)return;
-  const inp=document.getElementById('strokes');
-  const v=Number(state.holes[state.currentHole]);
-  inp.value=Number.isFinite(v)&&v>0?v:'';
-}
-function renderSummary(){
-  const s=computeSummary();
+function renderForm(){ if(editing)return;
+  const inp=document.getElementById('strokes'); const v=Number(state.holes[state.currentHole]);
+  inp.value=Number.isFinite(v)&&v>0?v:''; }
+function renderSummary(){ const s=computeSummary();
   document.getElementById('frontVal').textContent=s.front;
   document.getElementById('backVal').textContent=s.back;
-  document.getElementById('totalVal').textContent=s.total;
-}
+  document.getElementById('totalVal').textContent=s.total; }
 function updateLiveSummaryForInput(){
   const n=state.currentHole; const raw=strokesEl.value; const v=Number(raw);
-  if(raw===''||!Number.isFinite(v)||v<1||v>15){delete state.holes[n];}
-  else{state.holes[n]=v;}
+  if(raw===''||!Number.isFinite(v)||v<1||v>15){ delete state.holes[n]; }
+  else{ state.holes[n]=v; }
   const cell=document.getElementById('holeGrid').children[n-1];
-  if(cell)cell.textContent=state.holes[n]??n;
+  if(cell) cell.textContent=state.holes[n]??n;
   renderSummary();
 }
-function nextHole(){ state.currentHole = (state.currentHole % 18) + 1; refresh(); setCurrentHole(state.currentHole); }
-function prevHole(){ state.currentHole = (state.currentHole - 2 + 18) % 18 + 1; refresh(); setCurrentHole(state.currentHole); }
+function nextHole(){ state.currentHole=(state.currentHole%18)+1; refresh(); setCurrentHole(state.currentHole); }
+function prevHole(){ state.currentHole=(state.currentHole-2+18)%18+1; refresh(); setCurrentHole(state.currentHole); }
 
 /* Menu */
-const hambtn = document.getElementById('hambtn');
-const panel  = document.getElementById('navpanel');
+const hambtn=document.getElementById('hambtn'); const panel=document.getElementById('navpanel');
 function openMenu(){ panel.classList.add('open'); hambtn.setAttribute('aria-expanded','true'); }
 function closeMenu(){ panel.classList.remove('open'); hambtn.setAttribute('aria-expanded','false'); }
 hambtn.addEventListener('click', ()=> (hambtn.getAttribute('aria-expanded')==='true'?closeMenu():openMenu()));
-document.addEventListener('click', (e)=>{ if(!panel.contains(e.target) && !hambtn.contains(e.target)) closeMenu(); });
+document.addEventListener('click', (e)=>{ if(!panel.contains(e.target)&&!hambtn.contains(e.target)) closeMenu(); });
 panel.addEventListener('click', (e)=>{
-  const btn = e.target.closest('[data-nav]'); if(!btn) return;
-  const which = btn.dataset.nav;
-  if(which==='leaderboard') location.href = 'leaderboard.html';
+  const btn=e.target.closest('[data-nav]'); if(!btn) return;
+  const which=btn.dataset.nav;
+  if(which==='leaderboard') location.href='leaderboard.html';
   if(which==='continue'){
-    const firstUn = (()=>{ for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) return i; } return null; })();
-    state.currentHole = firstUn || state.currentHole || 1;
-    refresh(); setCurrentHole(state.currentHole); closeMenu();
+    const firstUn=(()=>{ for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) return i; } return null;})();
+    state.currentHole=firstUn||state.currentHole||1; refresh(); setCurrentHole(state.currentHole); closeMenu();
   }
   if(which==='signout'){ window.signOutNow?.(); }
 });
@@ -549,40 +501,27 @@ panel.addEventListener('click', (e)=>{
 /* Events */
 const strokesEl=document.getElementById('strokes');
 async function trySaveCurrent(){
-  const n = state.currentHole;
-  const val = Number(strokesEl.value);
-  if (!Number.isFinite(val) || val < 1 || val > 15) return false;
-
-  state.holes[n] = val;
-  const cell = document.getElementById('holeGrid').children[n-1];
-  if (cell) cell.textContent = val;
-  renderSummary();
-
-  try{ await saveHole(n, val); return true; }
-  catch(e){ alert(`Save failed: ${e.code||''} ${e.message||e}`); return false; }
+  const n=state.currentHole; const val=Number(strokesEl.value);
+  if(!Number.isFinite(val)||val<1||val>15) return false;
+  state.holes[n]=val; const cell=document.getElementById('holeGrid').children[n-1]; if(cell) cell.textContent=val; renderSummary();
+  try{ await saveHole(n,val); return true; }catch(e){ alert(`Save failed: ${e.code||''} ${e.message||e}`); return false; }
 }
-strokesEl.addEventListener('focus', ()=>{ editing = true; });
+strokesEl.addEventListener('focus', ()=>{ editing=true; });
 strokesEl.addEventListener('input', updateLiveSummaryForInput);
-strokesEl.addEventListener('blur',  async ()=>{ editing = false; await trySaveCurrent(); renderForm(); persistToLocal(); });
-strokesEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); strokesEl.blur(); }});
+strokesEl.addEventListener('blur', async ()=>{ editing=false; await trySaveCurrent(); renderForm(); persistToLocal(); });
+strokesEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); strokesEl.blur(); }});
 
 document.getElementById('nextHoleBtn').addEventListener('click', async ()=>{ await trySaveCurrent(); nextHole(); });
 document.getElementById('prevHoleBtn').addEventListener('click', async ()=>{ await trySaveCurrent(); prevHole(); });
 
 document.getElementById('clearBtn').addEventListener('click', async ()=>{
-  const n = state.currentHole;
-  await clearHole(n);
-  refresh();
+  const n=state.currentHole; await clearHole(n); refresh();
 });
 document.getElementById('finishBtn').addEventListener('click', async ()=>{
-  const missing = []; for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) missing.push(i); }
+  const missing=[]; for(let i=1;i<=18;i++){ if(!Number.isFinite(Number(state.holes[i]))) missing.push(i); }
   if(missing.length && !confirm(`You have ${missing.length} hole(s) without a score: ${missing.join(', ')}.\nSubmit anyway?`)) return;
-  try{
-    const newId = await finalizeRound();
-    alert('Round finished and saved!\nID: '+ newId);
-  }catch(e){
-    alert('Finish failed: ' + (e.code||'') + ' ' + (e.message||e));
-  }
+  try{ const newId=await finalizeRound(); alert('Round finished and saved!\nID: '+newId); }
+  catch(e){ alert('Finish failed: ' + (e.code||'') + ' ' + (e.message||e)); }
 });
 
 function refresh(){ renderHeader(); renderGrid(); renderForm(); renderSummary(); }
